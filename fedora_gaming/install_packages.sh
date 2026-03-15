@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 PACKAGE_FILE="$HOME/packages.txt"
 

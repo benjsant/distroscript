@@ -6,3 +6,21 @@ ca-certificates
 apt-transport-https
 software-properties-common
 lsb-release
+openssh-client
+# Utilitaires dev
+bat
+ripgrep
+fzf
+jq
+htop
+tree
+unzip
+tmux
+gh
+rsync
+lsof
+strace
+zsh
+# Hugo / contenus
+imagemagick
+pandoc

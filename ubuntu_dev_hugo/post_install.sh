@@ -1,12 +1,14 @@
 #!/bin/bash
-set -e
+set -euo pipefail
+
+source ~/versions.sh
 
 echo "🔧 Mise à jour du système..."
 sudo apt update && sudo apt upgrade -y
 
 echo "📦 Installation des paquets de base..."
 if [ -f ~/packages.txt ]; then
-    xargs -a ~/packages.txt sudo apt install -y
+    grep -v '^\s*#' ~/packages.txt | grep -v '^\s*$' | xargs -r sudo apt install -y
 else
     echo "❌ Fichier ~/packages.txt introuvable."
     exit 1
@@ -35,29 +37,16 @@ else
     echo "✅ Hugo déjà installé."
 fi
 
-### 🖥️ Visual Studio Code
-if ! command -v code &>/dev/null; then
-    echo "🖥️ Installation de Visual Studio Code..."
-    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-    sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
-    sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
-    sudo apt update
-    sudo apt install -y code
-    rm -f microsoft.gpg
-else
-    echo "✅ Visual Studio Code déjà installé."
-fi
-
 ### 🔧 NVM + Node.js LTS
 if [ ! -d "$HOME/.nvm" ]; then
     echo "🌐 Installation de NVM et Node.js LTS..."
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+    curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
 else
     echo "✅ NVM déjà installé."
 fi
 
 # Charger NVM
-export NVM_DIR="$HOME/.config/nvm"
+export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
@@ -66,10 +55,37 @@ if ! command -v node &>/dev/null; then
     nvm install --lts
 fi
 
-### 🎨 Prompt personnalisé (optionnel)
-if ! grep -q '📦[\u@\h \W]\\$' ~/.bashrc; then
+### 🎨 Prompt personnalisé
+if ! grep -q 'PS1=.*📦' ~/.bashrc; then
     echo 'export PS1="📦[\u@\h \W]\\$ "' >> ~/.bashrc
+fi
+
+# Alias VS Code pour distrobox (user namespace)
+if ! grep -q "alias code=" ~/.bashrc; then
+    echo "alias code='code --no-sandbox'" >> ~/.bashrc
+fi
+
+echo "🔍 Vérification VS Code..."
+code --version && echo "✅ VS Code opérationnel." \
+    || echo "⚠️ VS Code installé mais non fonctionnel (essayez manuellement : code --no-sandbox)"
+
+### 🐚 Configuration Zsh
+if command -v zsh &>/dev/null && [ ! -f ~/.zshrc ]; then
+    echo "🐚 Création d'un ~/.zshrc minimal..."
+    cat > ~/.zshrc << 'EOF'
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" 2>/dev/null || true
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+alias code='code --no-sandbox'
+alias ll='ls -lah'
+export PROMPT='[%n@%m %1~]%# '
+EOF
+    chsh -s "$(which zsh)" 2>/dev/null || true
+    echo "✅ Zsh configuré comme shell par défaut."
 fi
 
 echo ""
 echo "✅ Installation complète ! Tu peux maintenant utiliser Hugo, Node, VS Code, etc."
+echo "💡 gh auth login   — pour connecter GitHub"

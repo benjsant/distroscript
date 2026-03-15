@@ -1,25 +1,27 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 ### 📌 Configuration
 BOX_NAME="ubuntu_dev_ia"
-UBUNTU_IMAGE="quay.io/toolbx/ubuntu-toolbox:24.04"
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+LIB_DIR="$SCRIPT_DIR/../lib"
 HOME_DIR="$HOME/distrobox/$BOX_NAME"
-SCRIPT_DIR="$(pwd)/$BOX_NAME"
+LOG_FILE="$HOME/distrobox/${BOX_NAME}_install.log"
 
-### ❌ Ne pas lancer en root
-if [ "$EUID" -eq 0 ]; then
-  echo "❌ Ce script ne doit pas être exécuté en tant que root."
-  exit 1
-fi
+source "$LIB_DIR/common.sh"
+source "$LIB_DIR/versions.sh"
+
+check_not_root
+enable_logging "$LOG_FILE"
 
 ### 🔍 Détection GPU (NVIDIA ou ROCm)
-MODE="cpu"  # défaut
+MODE="cpu"
 
 if command -v lspci &>/dev/null; then
-  if lspci | grep -i 'NVIDIA' >/dev/null 2>&1; then
+  if lspci | grep -iE 'NVIDIA' >/dev/null 2>&1; then
     MODE="nvidia"
-  elif lspci | grep -i 'AMD/ATI' >/dev/null 2>&1 && ls /opt/rocm* &>/dev/null; then
+  elif lspci | grep -iE 'AMD|ATI|Radeon' >/dev/null 2>&1 \
+    && find /opt -maxdepth 1 -type d -name "rocm*" 2>/dev/null | grep -q .; then
     MODE="rocm"
   fi
 fi
@@ -35,26 +37,13 @@ fi
 
 echo "ℹ️ Mode GPU sélectionné : $MODE"
 
-### 🔁 Vérifier si la Distrobox existe déjà
-if distrobox list | grep -q "$BOX_NAME"; then
-  echo "⚠️ Une Distrobox nommée '$BOX_NAME' existe déjà."
-  read -rp "Voulez-vous la supprimer et la recréer ? (o/N) " confirm
-  if [[ "$confirm" =~ ^[oO]$ ]]; then
-    echo "🗑️ Suppression de l'ancienne Distrobox..."
-    distrobox rm "$BOX_NAME" --force
-    rm -rf "$HOME_DIR"
-  else
-    echo "❌ Annulation."
-    exit 1
-  fi
-fi
+check_or_recreate_box "$BOX_NAME" "$HOME_DIR"
 
-### 📁 Créer le dossier home
+### 📁 Préparer le dossier home
 mkdir -p "$HOME_DIR"
-
-### 📄 Copier les scripts nécessaires dans le home
 cp "$SCRIPT_DIR/post_install.sh" "$HOME_DIR/"
 cp "$SCRIPT_DIR/packages.txt" "$HOME_DIR/"
+cp "$LIB_DIR/versions.sh" "$HOME_DIR/"
 
 ### 🧱 Construction des flags selon GPU
 EXTRA_FLAGS="--device=/dev/dri"
@@ -80,11 +69,23 @@ distrobox-create \
   --additional-packages "systemd" \
   --additional-flags "$EXTRA_FLAGS"
 
-### 🚀 Lancement du post-install dans la Distrobox avec passage du mode GPU
+### 🚀 Lancement du post-install
 echo "⚙️ Lancement du post-install dans la Distrobox avec mode GPU : $MODE..."
 
 distrobox enter "$BOX_NAME" -- bash -c "~/post_install.sh $MODE"
 
+### 🔍 Vérification post-install
+echo "🔍 Vérification de l'installation..."
+distrobox enter "$BOX_NAME" -- bash -c "
+  command -v ollama &>/dev/null && echo '  ✅ Ollama' || echo '  ⚠️  Ollama manquant'
+  [ -d \$HOME/.pyenv ] && echo '  ✅ pyenv' || echo '  ⚠️  pyenv manquant'
+  \$HOME/.pyenv/shims/python3 -c 'import torch; print(\"  ✅ PyTorch\", torch.__version__)' 2>/dev/null || echo '  ⚠️  PyTorch manquant'
+  [ -f \$HOME/.local/bin/uv ] && echo '  ✅ uv' || echo '  ⚠️  uv manquant'
+  command -v code &>/dev/null && echo '  ✅ VS Code' || echo '  ⚠️  VS Code manquant'
+  command -v gh &>/dev/null && echo '  ✅ gh' || echo '  ⚠️  gh manquant'
+" || true
+
 echo ""
 echo "✅ Distrobox '$BOX_NAME' prête à l'emploi !"
-echo "👉 Lance l’environnement avec : distrobox enter $BOX_NAME"
+echo "👉 Lance l'environnement avec : distrobox enter $BOX_NAME"
+echo "📝 Log complet : $LOG_FILE"

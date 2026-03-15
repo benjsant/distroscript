@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 echo "📦 Activation de RPM Fusion et des dépôts COPR..."
 

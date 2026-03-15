@@ -2,167 +2,146 @@
 
 ![image](featured_image.png)
 
-**DistroScript** est un ensemble de scripts Bash permettant de créer et configurer automatiquement des environnements de développement ou gaming isolés grâce à **Distrobox**.  
-Chaque environnement est basé sur une image Linux spécifique et préinstallé avec les outils nécessaires à un usage ciblé.
+**DistroScript** est un ensemble de scripts Bash permettant de créer et configurer automatiquement des environnements de développement isolés grâce à **Distrobox**.
+Chaque environnement est basé sur Ubuntu 24.04 et préinstallé avec les outils nécessaires à un usage ciblé.
 
 * * *
 
 ## 🚀 Fonctionnalités
 
-- Création automatisée de **Distrobox** dédiées selon le besoin.
-- Scripts de **post-installation** pour configurer chaque environnement.
-- Installation des dépendances et outils spécifiques.
-- **Isolation** tout en gardant l’accès aux fichiers et périphériques de l’hôte.
-- Choix interactif de l’environnement à installer.
+- Création automatisée de **Distrobox** dédiées selon le besoin
+- Scripts de **post-installation** pour configurer chaque environnement
+- **Détection GPU NVIDIA** automatique — support activé si disponible
+- **Logs** d'installation sauvegardés dans `~/distrobox/<nom>_install.log`
+- **Vérification post-install** des outils clés
+- Script de **mise à jour** des environnements existants
+- Script de **désinstallation** propre
+- Choix interactif de l'environnement à installer
 
 * * *
 
 ## 📋 Environnements disponibles
 
-| Nom | Base | Usage principal |
+| Nom | Base | Outils principaux |
 | --- | --- | --- |
-| `fedora_gaming` | Fedora Toolbox | Gaming Linux avec ProtonUp-Qt, Heroic, émulateurs |
-| `ubuntu_dev_ia` | Ubuntu 24.04 | IA & Machine Learning avec accélération GPU si dispo |
-| `ubuntu_dev_hugo` | Ubuntu 24.04 | Développement de sites statiques avec Hugo |
-| `ubuntu_dev_python` | Ubuntu 24.04 | Dev Python avec Pyenv pour versions multiples |
+| `ubuntu_dev_hugo` | Ubuntu 24.04 | Hugo, Homebrew, Node (NVM), VS Code, gh |
+| `ubuntu_dev_python` | Ubuntu 24.04 | pyenv, uv, Node (NVM), VS Code, gh |
+| `ubuntu_dev_ia` | Ubuntu 24.04 | Ollama, pyenv, uv, VS Code, gh — GPU NVIDIA/ROCm/CPU |
+
+> Tous les environnements incluent : `bat`, `ripgrep`, `fzf`, `jq`, `htop`, `tmux`, `tree`, `gh`
 
 * * *
 
 ## 📦 Pré-requis
 
-- Un système **Linux** (Distrobox n’est pas compatible Windows/macOS nativement)
+- Un système **Linux**
 - **Podman** ou **Docker** installé et configuré
-- **Distrobox** installé 
+- **Distrobox** installé
 - Connexion Internet
-- Espace disque suffisant (certains environnements sont lourds)
-- Droits sudo pour installer certains paquets
+- Espace disque suffisant (plusieurs Go selon l'environnement)
 
 * * *
 
-## ⚙️ Installation
+## ⚙️ Utilisation
 
-1.  **Cloner le dépôt**
+### Installation
 
 ```bash
 git clone https://github.com/benjsant/distroscripts.git
 cd distroscripts
+./install.sh
 ```
 
-2.  \*\*Lancer le script de création  
-    \*\*
-    
-    ```bash
-    ./install.sh
-    ```
-    
+### Mise à jour des environnements existants
+
+```bash
+./update.sh
+```
+
+### Désinstallation
+
+```bash
+./uninstall.sh
+```
+
+### Accéder à un environnement
+
+```bash
+distrobox enter ubuntu_dev_python
+```
 
 * * *
 
 ## 📂 Structure du projet
 
-```bash
+```
 .
-├── fedora_gaming
-│   ├── config_amd.sh
-│   ├── install_packages.sh
+├── install.sh            # Menu principal d'installation
+├── update.sh             # Mise à jour des environnements
+├── uninstall.sh          # Suppression des environnements
+├── lib/
+│   ├── common.sh         # Fonctions partagées (logging, vérifications, GPU)
+│   └── versions.sh       # Versions centralisées (images, NVM, Python…)
+├── ubuntu_dev_hugo/
 │   ├── install.sh
-│   ├── packages.txt
-│   └── setup_repos.sh
-├── install.sh
-├── LICENSE
-├── README.md
-├── ubuntu_dev_hugo
+│   ├── post_install.sh
+│   └── packages.txt
+├── ubuntu_dev_python/
 │   ├── install.sh
-│   ├── packages.txt
-│   └── post_install.sh
-├── ubuntu_dev_ia
+│   ├── post_install.sh
+│   └── packages.txt
+├── ubuntu_dev_ia/
 │   ├── install.sh
-│   ├── packages.txt
-│   └── post_install.sh
-└── ubuntu_dev_python
+│   ├── post_install.sh
+│   └── packages.txt
+└── fedora_gaming/        # Environnement avancé (non affiché dans le menu)
     ├── install.sh
-    ├── packages.txt
-    └── post_install.sh
+    ├── setup_repos.sh
+    ├── config_amd.sh
+    ├── install_packages.sh
+    └── packages.txt
 ```
 
 * * *
 
-## ⚠️ Limitations et contraintes par environnement
+## ⚠️ Limitations par environnement
 
 ### **Générales**
 
-- **Linux uniquement** : Distrobox ne fonctionne pas nativement sur Windows/macOS.
-    
-- **Performances** : Dépendent du matériel de l’hôte (CPU, RAM, GPU).
-    
-- **Accès périphériques** : Certaines applications nécessitent des permissions supplémentaires (USB, GPU).
-    
-- **Ressources** : Certaines Distrobox peuvent être lourdes et nécessiter plusieurs Go d’espace disque.
-    
-
-* * *
-
-### **fedora_gaming**
-
-- **GPU AMD recommandé** : Pour exploiter pleinement Mesa et Proton.
-    
-- **Stockage** : Les jeux peuvent occuper plusieurs dizaines de Go.
-    
-- **Compatibilité périphériques** : Certains outils (ex. Sunshine) peuvent demander des accès matériels spécifiques.
-    
-- **CPU** : Les performances des jeux peuvent être limitées sur des CPU anciens ou à faible nombre de cœurs.
-    
+- **Linux uniquement** : Distrobox ne fonctionne pas nativement sur Windows/macOS
+- **Performances** : Dépendent du matériel hôte (CPU, RAM, GPU)
+- **Ressources** : Certaines Distrobox peuvent nécessiter plusieurs Go d'espace disque
 
 * * *
 
 ### **ubuntu_dev_ia**
 
-- **Accélération GPU** : CUDA (NVIDIA) ou ROCm (AMD) utilisables uniquement si le matériel et les pilotes sont déjà installés sur l’hôte.
-    
-- **Mode CPU** : En absence de GPU compatible, les traitements IA seront beaucoup plus lents.
-    
-- **Poids** : Les frameworks IA peuvent prendre plusieurs Go.
-    
-- **Dépendances** : Certaines librairies IA peuvent nécessiter des versions spécifiques de Python ou GCC.
-    
-- **Mémoire** : Les modèles IA peuvent consommer plusieurs dizaines de Go de RAM si exécutés entièrement.
-    
+- **Accélération GPU** : CUDA (NVIDIA) ou ROCm (AMD) utilisables uniquement si les drivers sont installés sur l'hôte
+- **Mode CPU** : En absence de GPU compatible, les traitements IA seront beaucoup plus lents
+- **Mémoire** : Les modèles Ollama peuvent consommer plusieurs Go de RAM
 
 * * *
 
 ### **ubuntu_dev_hugo**
 
-- **Accès réseau** : Le serveur local de Hugo peut être inaccessible si certains ports sont bloqués.
-    
-- **VPN** : Peut interférer avec le hot reload.
-    
-- **Performances** : Dépend du CPU pour le build rapide de gros sites.
-    
+- **Accès réseau** : Le serveur local Hugo peut être inaccessible si certains ports sont bloqués
+- **VPN** : Peut interférer avec le hot reload
 
 * * *
 
 ### **ubuntu_dev_python**
 
-- **Temps d’installation** : Pyenv compile Python depuis les sources → long sur machines modestes.
-    
-- **Dépendances** : La liste `packages.txt` est spécifique à Ubuntu, à adapter si image modifiée.
-    
-- **Versions multiples** : La gestion de plusieurs versions Python peut complexifier l’environnement si mal configurée.
-    
+- **Temps d'installation** : pyenv compile Python depuis les sources → long sur machines modestes
+- **uv** : Complément de pyenv — `uv venv` pour créer un environnement virtuel, `uv pip install` pour installer des paquets
 
 * * *
 
-## 💡 Conseils d’utilisation
+## 💡 Conseils d'utilisation
 
-- Sauvegardez vos données importantes **hors** de la Distrobox.
-    
-- Utilisez `distrobox enter <nom>` pour accéder rapidement à l’environnement.
-    
-- Nettoyez régulièrement les images inutilisées avec `podman image prune` ou `docker image prune`.
-    
-- Vérifiez que vos périphériques (GPU, USB, HDMI) sont accessibles depuis l’hôte si vous prévoyez un usage intensif.
-    
-- Pour les environnements IA, privilégiez un GPU dédié si possible pour des performances optimales.
-    
+- Authentifiez-vous à GitHub dès l'entrée dans l'environnement : `gh auth login`
+- Utilisez `uv venv` + `uv pip install` plutôt que `pip` classique (10-100x plus rapide)
+- Nettoyez les images inutilisées avec `podman image prune` ou `docker image prune`
+- Les logs d'installation sont dans `~/distrobox/<nom>_install.log` en cas de problème
+- VS Code est lancé avec `--no-sandbox` (alias automatique) pour fonctionner dans Distrobox
 
 * * *

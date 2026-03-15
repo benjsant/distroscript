@@ -1,35 +1,28 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 ### 📌 Configuration
 BOX_NAME="ubuntu_dev_python"
-UBUNTU_IMAGE="quay.io/toolbx/ubuntu-toolbox:24.04"
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+LIB_DIR="$SCRIPT_DIR/../lib"
 HOME_DIR="$HOME/distrobox/$BOX_NAME"
+LOG_FILE="$HOME/distrobox/${BOX_NAME}_install.log"
 
-SCRIPT_DIR="$(pwd)/$BOX_NAME"
+source "$LIB_DIR/common.sh"
+source "$LIB_DIR/versions.sh"
 
-### ❌ Interdiction root
-if [ "$EUID" -eq 0 ]; then
-  echo "❌ Ne pas exécuter ce script en tant que root."
-  exit 1
-fi
+check_not_root
+enable_logging "$LOG_FILE"
+check_or_recreate_box "$BOX_NAME" "$HOME_DIR"
 
-### 🔁 Vérifier si la Distrobox existe déjà
-if distrobox list | grep -q "$BOX_NAME"; then
-  echo "⚠️ Une Distrobox nommée '$BOX_NAME' existe déjà."
-  read -rp "🔁 Voulez-vous la supprimer et la recréer ? (o/N) " confirm
-  if [[ "$confirm" =~ ^[oO]$ ]]; then
-    echo "🗑️ Suppression de l'ancienne Distrobox..."
-    distrobox rm "$BOX_NAME" --force
-    rm -rf "$HOME_DIR"
-  else
-    echo "❌ Annulation."
-    exit 1
-  fi
-fi
-
-### 📁 Créer le dossier home
+### 📁 Préparer le dossier home
 mkdir -p "$HOME_DIR"
+cp "$SCRIPT_DIR/post_install.sh" "$HOME_DIR/"
+cp "$SCRIPT_DIR/packages.txt" "$HOME_DIR/"
+cp "$LIB_DIR/versions.sh" "$HOME_DIR/"
+
+### 🎮 Détection GPU NVIDIA
+detect_nvidia
 
 ### 🧱 Création de la Distrobox
 echo "📦 Création de la Distrobox Ubuntu pour le dev Python..."
@@ -37,13 +30,25 @@ echo "📦 Création de la Distrobox Ubuntu pour le dev Python..."
 distrobox-create \
   --name "$BOX_NAME" \
   --image "$UBUNTU_IMAGE" \
-  --home "$HOME_DIR"
+  --home "$HOME_DIR" \
+  --additional-flags "$EXTRA_FLAGS"
 
 ### 🚀 Exécuter le post-install
 echo "⚙️ Lancement du post-install dans la Distrobox..."
 
-distrobox enter "$BOX_NAME" -- bash $SCRIPT_DIR/post_install.sh
+distrobox enter "$BOX_NAME" -- bash ~/post_install.sh
+
+### 🔍 Vérification post-install
+echo "🔍 Vérification de l'installation..."
+distrobox enter "$BOX_NAME" -- bash -c "
+  [ -d \$HOME/.pyenv ] && echo '  ✅ pyenv' || echo '  ⚠️  pyenv manquant'
+  [ -d \$HOME/.nvm ] && echo '  ✅ NVM' || echo '  ⚠️  NVM manquant'
+  [ -f \$HOME/.local/bin/uv ] && echo '  ✅ uv' || echo '  ⚠️  uv manquant'
+  command -v gh &>/dev/null && echo '  ✅ gh' || echo '  ⚠️  gh manquant'
+  command -v code &>/dev/null && echo '  ✅ VS Code' || echo '  ⚠️  VS Code manquant'
+" || true
 
 echo ""
 echo "✅ Distrobox '$BOX_NAME' prête à l'emploi !"
-echo "👉 Entre dans l’environnement avec : distrobox enter $BOX_NAME"
+echo "👉 Entre dans l'environnement avec : distrobox enter $BOX_NAME"
+echo "📝 Log complet : $LOG_FILE"

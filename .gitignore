@@ -1,0 +1,15 @@
+# Logs d'installation
+*.log
+
+# Fichiers temporaires
+*.tmp
+*.bak
+
+# macOS
+.DS_Store
+
+# Éditeurs
+.vscode/
+.idea/
+*.swp
+*.swo

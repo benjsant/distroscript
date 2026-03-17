@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-BOX_NAME="ubuntu_dev_python"
+BOX_NAME="ubuntu_dev_rust"
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 LIB_DIR="$SCRIPT_DIR/../lib"
 HOME_DIR="$HOME/distrobox/$BOX_NAME"
@@ -19,15 +19,13 @@ cp "$SCRIPT_DIR/post_install.sh" "$HOME_DIR/"
 cp "$SCRIPT_DIR/packages.txt" "$HOME_DIR/"
 cp "$LIB_DIR/versions.sh" "$HOME_DIR/"
 
-detect_nvidia
-
 echo "Création de la distrobox '$BOX_NAME'..."
 
 distrobox-create \
   --name "$BOX_NAME" \
   --image "$UBUNTU_IMAGE" \
   --home "$HOME_DIR" \
-  --additional-flags "$EXTRA_FLAGS"
+  --additional-flags "--device=/dev/dri"
 
 echo "Lancement du post-install..."
 
@@ -35,10 +33,10 @@ distrobox enter "$BOX_NAME" -- bash ~/post_install.sh
 
 echo "Vérification..."
 distrobox enter "$BOX_NAME" -- bash -c "
-  [ -d \$HOME/.pyenv ]              && echo '  [ok] pyenv' || echo '  [!!] pyenv manquant'
-  [ -d \$HOME/.nvm ]                && echo '  [ok] NVM'   || echo '  [!!] NVM manquant'
-  [ -f \$HOME/.local/bin/uv ]       && echo '  [ok] uv'    || echo '  [!!] uv manquant'
-  command -v gh &>/dev/null         && echo '  [ok] gh'    || echo '  [!!] gh manquant'
+  command -v rustc &>/dev/null   && rustc --version | sed 's/^/  [ok] /' || echo '  [!!] rustc manquant'
+  command -v cargo &>/dev/null   && echo '  [ok] cargo'  || echo '  [!!] cargo manquant'
+  command -v rustfmt &>/dev/null && echo '  [ok] rustfmt' || echo '  [!!] rustfmt manquant'
+  command -v gh &>/dev/null      && echo '  [ok] gh'     || echo '  [!!] gh manquant'
 " || true
 
 echo ""

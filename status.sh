@@ -6,12 +6,11 @@ source "$SCRIPT_DIR/lib/common.sh"
 
 check_not_root
 
-BOXES=("ubuntu_dev_hugo" "ubuntu_dev_python" "ubuntu_dev_ia")
+BOXES=("ubuntu_dev_hugo" "ubuntu_dev_python" "ubuntu_dev_ia" "ubuntu_dev_rust" "ubuntu_dev_n8n")
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📦  DistroScript — État des environnements"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "DistroScript — état des environnements"
+echo "---------------------------------------"
 echo ""
 
 for box in "${BOXES[@]}"; do
@@ -21,30 +20,28 @@ for box in "${BOXES[@]}"; do
     if [ -d "$home_dir" ]; then
       home_size=$(du -sh "$home_dir" 2>/dev/null | cut -f1)
     fi
-    echo "✅  $box"
-    echo "    Dossier : $home_dir ($home_size)"
+    echo "[ok] $box  ($home_size)"
   else
-    echo "❌  $box — non installé"
+    echo "[--] $box  non installé"
   fi
-  echo ""
 done
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🖥️   GPU hôte"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "GPU hôte"
+echo "--------"
 if command -v lspci &>/dev/null; then
   if lspci | grep -i 'NVIDIA' &>/dev/null; then
-    echo "   🟢 GPU NVIDIA détecté"
+    echo "NVIDIA"
     command -v nvidia-smi &>/dev/null \
       && nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null \
-           | sed 's/^/      /' \
+           | sed 's/^/  /' \
       || true
   elif lspci | grep -iE 'AMD|ATI|Radeon' &>/dev/null; then
-    echo "   🔴 GPU AMD/Radeon détecté"
+    echo "AMD/Radeon"
   else
-    echo "   💻 Aucun GPU dédié détecté"
+    echo "aucun GPU dédié"
   fi
 else
-  echo "   ⚠️  lspci non disponible"
+  echo "lspci non disponible" >&2
 fi
 echo ""

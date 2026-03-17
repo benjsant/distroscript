@@ -1,0 +1,11 @@
+# Outils de build
+build-essential
+pkg-config
+libssl-dev
+clang
+
+# Outils
+curl
+git
+mold
+zsh

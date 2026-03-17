@@ -1,0 +1,8 @@
+# Base
+curl
+git
+zsh
+
+# Build deps pour certains nodes n8n
+build-essential
+python3

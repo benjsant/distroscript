@@ -12,6 +12,7 @@ source "$LIB_DIR/versions.sh"
 
 check_not_root
 enable_logging "$LOG_FILE"
+print_host_summary
 check_or_recreate_box "$BOX_NAME" "$HOME_DIR"
 
 mkdir -p "$HOME_DIR"

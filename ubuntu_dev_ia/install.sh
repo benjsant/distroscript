@@ -12,16 +12,19 @@ source "$LIB_DIR/versions.sh"
 
 check_not_root
 enable_logging "$LOG_FILE"
+print_host_summary
 
 # Détection GPU
 MODE="cpu"
+ROCM_PATH=""
 
 if command -v lspci &>/dev/null; then
   if lspci | grep -iE 'NVIDIA' >/dev/null 2>&1; then
     MODE="nvidia"
-  elif lspci | grep -iE 'AMD|ATI|Radeon' >/dev/null 2>&1 \
-    && find /opt -maxdepth 1 -type d -name "rocm*" 2>/dev/null | grep -q .; then
-    MODE="rocm"
+  elif lspci | grep -iE 'AMD|ATI|Radeon' >/dev/null 2>&1; then
+    if ROCM_PATH="$(detect_rocm_path)"; then
+      MODE="rocm"
+    fi
   fi
 fi
 
@@ -42,16 +45,22 @@ cp "$SCRIPT_DIR/post_install.sh" "$HOME_DIR/"
 cp "$SCRIPT_DIR/packages.txt" "$HOME_DIR/"
 cp "$LIB_DIR/versions.sh" "$HOME_DIR/"
 
-EXTRA_FLAGS="--device=/dev/dri"
-if [ "$MODE" = "rocm" ]; then
-  ROCM_PATH=$(find /opt -maxdepth 1 -type d -name "rocm*" | sort | tail -1)
-  if [ -n "$ROCM_PATH" ]; then
-    EXTRA_FLAGS="$EXTRA_FLAGS --volume=$ROCM_PATH:$ROCM_PATH"
-  else
-    echo "Mode rocm sélectionné mais dossier ROCm non trouvé dans /opt" >&2
-  fi
-elif [ "$MODE" = "nvidia" ]; then
-  EXTRA_FLAGS="$EXTRA_FLAGS --nvidia"
+EXTRA_FLAGS=""
+detect_nvidia  # ajoute /dev/dri + --nvidia si toolkit présent
+SEL="$(selinux_volume_suffix)"
+
+if [ "$MODE" = "rocm" ] && [ -n "$ROCM_PATH" ]; then
+  EXTRA_FLAGS="$EXTRA_FLAGS --volume=${ROCM_PATH}:${ROCM_PATH}${SEL}"
+elif [ "$MODE" = "nvidia" ] && ! has_nvidia_container_toolkit; then
+  echo "Mode nvidia demandé mais nvidia-container-toolkit absent — CUDA ne fonctionnera pas dans la box." >&2
+fi
+
+# systemd dans le conteneur uniquement si la délégation cgroups est disponible
+INIT_FLAGS=()
+if can_run_systemd_in_container; then
+  INIT_FLAGS=(--init --additional-packages "systemd")
+else
+  echo "Délégation cgroups v2 absente — création sans --init (systemd-in-container indisponible)." >&2
 fi
 
 echo "Création de la distrobox '$BOX_NAME'..."
@@ -59,9 +68,8 @@ echo "Création de la distrobox '$BOX_NAME'..."
 distrobox-create \
   --name "$BOX_NAME" \
   --image "$UBUNTU_IMAGE" \
-  --init \
+  "${INIT_FLAGS[@]}" \
   --home "$HOME_DIR" \
-  --additional-packages "systemd" \
   --additional-flags "$EXTRA_FLAGS"
 
 echo "Lancement du post-install (mode $MODE)..."

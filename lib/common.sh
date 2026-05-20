@@ -23,12 +23,136 @@ check_or_recreate_box() {
   fi
 }
 
-detect_nvidia() {
-  EXTRA_FLAGS="--device=/dev/dri"
-  if command -v lspci &>/dev/null && lspci | grep -i 'NVIDIA' >/dev/null 2>&1; then
-    echo "GPU NVIDIA détecté — activation du support NVIDIA..."
-    EXTRA_FLAGS="$EXTRA_FLAGS --nvidia"
+# Détecte la distribution hôte : "fedora" (inclut Nobara/Bazzite), "debian" (inclut Mint/Ubuntu), ou "other"
+detect_host_distro() {
+  HOST_DISTRO="other"
+  HOST_ID_LIKE=""
+  if [ -r /etc/os-release ]; then
+    # shellcheck disable=SC1091
+    . /etc/os-release
+    HOST_ID_LIKE="${ID_LIKE:-} ${ID:-}"
+    case "$HOST_ID_LIKE" in
+      *fedora*|*rhel*) HOST_DISTRO="fedora" ;;
+      *debian*|*ubuntu*) HOST_DISTRO="debian" ;;
+    esac
   fi
+  export HOST_DISTRO HOST_ID_LIKE
+}
+
+# Détecte le moteur de conteneurs préféré
+detect_container_engine() {
+  if command -v podman &>/dev/null; then
+    CONTAINER_ENGINE="podman"
+  elif command -v docker &>/dev/null; then
+    CONTAINER_ENGINE="docker"
+  else
+    CONTAINER_ENGINE=""
+  fi
+  export CONTAINER_ENGINE
+}
+
+# True si SELinux est actif et en mode enforcing/permissive
+is_selinux_enforced() {
+  if command -v getenforce &>/dev/null; then
+    case "$(getenforce 2>/dev/null)" in
+      Enforcing|Permissive) return 0 ;;
+    esac
+  fi
+  [ -f /sys/fs/selinux/enforce ] && return 0
+  return 1
+}
+
+# Suffixe SELinux pour les --volume — ":z" si SELinux actif, vide sinon
+selinux_volume_suffix() {
+  if is_selinux_enforced; then
+    echo ":z"
+  else
+    echo ""
+  fi
+}
+
+# True si cgroups v2 unifié
+is_cgroups_v2() {
+  [ -f /sys/fs/cgroup/cgroup.controllers ]
+}
+
+# True si la délégation cgroups est active pour l'utilisateur courant
+has_cgroup_delegation() {
+  is_cgroups_v2 || return 1
+  command -v loginctl &>/dev/null || return 1
+  loginctl show-user "$USER" 2>/dev/null | grep -q '^Delegate=yes' || return 1
+  return 0
+}
+
+# Vérifie si systemd-in-container est faisable
+can_run_systemd_in_container() {
+  has_cgroup_delegation
+}
+
+# True si nvidia-container-toolkit (ou équivalent) est installé sur l'hôte
+has_nvidia_container_toolkit() {
+  command -v nvidia-ctk &>/dev/null || command -v nvidia-container-runtime &>/dev/null
+}
+
+# Détecte le chemin du runtime XDG de l'utilisateur (plus robuste que /run/user/$UID)
+detect_xdg_runtime() {
+  if command -v loginctl &>/dev/null; then
+    local rp
+    rp="$(loginctl show-user "$USER" -p RuntimePath --value 2>/dev/null)"
+    if [ -n "$rp" ] && [ -d "$rp" ]; then
+      echo "$rp"
+      return
+    fi
+  fi
+  echo "${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+}
+
+# GID du groupe render sur l'hôte (utile pour --device=/dev/dri sur hôtes Fedora/Ubuntu mixtes)
+detect_render_gid() {
+  if getent group render >/dev/null 2>&1; then
+    getent group render | awk -F: '{print $3}'
+  else
+    echo ""
+  fi
+}
+
+# Détection GPU NVIDIA + activation du flag --nvidia uniquement si le toolkit est présent
+detect_nvidia() {
+  EXTRA_FLAGS="${EXTRA_FLAGS:-}"
+  local sel
+  sel="$(selinux_volume_suffix)"
+
+  # /dev/dri est presque toujours présent ; on l'expose pour le rendu vidéo / VAAPI
+  if [ -d /dev/dri ]; then
+    EXTRA_FLAGS="$EXTRA_FLAGS --device=/dev/dri"
+  fi
+
+  if command -v lspci &>/dev/null && lspci | grep -i 'NVIDIA' >/dev/null 2>&1; then
+    if has_nvidia_container_toolkit; then
+      echo "GPU NVIDIA détecté + nvidia-container-toolkit présent — activation du support NVIDIA."
+      EXTRA_FLAGS="$EXTRA_FLAGS --nvidia"
+    else
+      echo "GPU NVIDIA détecté mais nvidia-container-toolkit absent — flag --nvidia désactivé." >&2
+      echo "  Installez-le pour activer CUDA dans la box :" >&2
+      echo "    Fedora/Nobara: sudo dnf install -y nvidia-container-toolkit" >&2
+      echo "    Debian/Mint  : voir https://docs.nvidia.com/datacenter/cloud-native/" >&2
+    fi
+  fi
+
+  # Sur SELinux, relabel des montages que distrobox ajoute par défaut serait idéal
+  # mais distrobox-create gère --home avec :Z en interne. On exporte sel pour les volumes manuels.
+  export SELINUX_VOL_SUFFIX="$sel"
+}
+
+# Cherche un dossier ROCm dans les emplacements connus (Fedora vs Ubuntu)
+detect_rocm_path() {
+  local candidate
+  for candidate in /opt/rocm* /usr/lib64/rocm* /usr/lib/rocm* /usr/share/rocm; do
+    for dir in $candidate; do
+      [ -d "$dir" ] && { echo "$dir"; return 0; }
+    done
+  done
+  return 1
 }
 
 enable_logging() {
@@ -36,4 +160,15 @@ enable_logging() {
   mkdir -p "$(dirname "$log_file")"
   exec > >(tee "$log_file") 2>&1
   echo "Log : $log_file"
+}
+
+# Affiche un résumé de l'environnement hôte au début de l'install
+print_host_summary() {
+  detect_host_distro
+  detect_container_engine
+  echo "Hôte : ${PRETTY_NAME:-inconnu} (catégorie: $HOST_DISTRO)"
+  echo "Moteur : ${CONTAINER_ENGINE:-aucun}"
+  echo "SELinux : $(is_selinux_enforced && echo "actif" || echo "inactif")"
+  echo "cgroups v2 délégué : $(has_cgroup_delegation && echo "oui" || echo "non")"
+  echo "nvidia-container-toolkit : $(has_nvidia_container_toolkit && echo "présent" || echo "absent")"
 }

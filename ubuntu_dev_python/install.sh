@@ -12,6 +12,7 @@ source "$LIB_DIR/versions.sh"
 
 check_not_root
 enable_logging "$LOG_FILE"
+print_host_summary
 check_or_recreate_box "$BOX_NAME" "$HOME_DIR"
 
 mkdir -p "$HOME_DIR"
@@ -19,6 +20,7 @@ cp "$SCRIPT_DIR/post_install.sh" "$HOME_DIR/"
 cp "$SCRIPT_DIR/packages.txt" "$HOME_DIR/"
 cp "$LIB_DIR/versions.sh" "$HOME_DIR/"
 
+EXTRA_FLAGS=""
 detect_nvidia
 
 echo "Création de la distrobox '$BOX_NAME'..."

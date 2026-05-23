@@ -8,6 +8,14 @@ check_not_root() {
   fi
 }
 
+# distrobox-init plante si LANG est sous forme non canonique (ex: "fr_FR.utf8"
+# au lieu de "fr_FR.UTF-8") car update-locale refuse cette forme. On neutralise
+# en forçant C.UTF-8 pour les appels à distrobox-create et distrobox enter.
+force_utf8_locale() {
+  export LANG=C.UTF-8
+  export LC_ALL=C.UTF-8
+}
+
 check_or_recreate_box() {
   local box_name="$1"
   local home_dir="$2"

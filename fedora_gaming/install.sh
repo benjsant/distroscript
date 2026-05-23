@@ -12,6 +12,7 @@ source "$LIB_DIR/common.sh"
 source "$LIB_DIR/versions.sh"
 
 check_not_root
+force_utf8_locale
 enable_logging "$LOG_FILE"
 print_host_summary
 

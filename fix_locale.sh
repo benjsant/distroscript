@@ -42,8 +42,25 @@ needs_fix() {
   grep -Eiq '^[A-Z_]+=.*\.(utf8|UTF8)([^A-Za-z0-9_-]|$)' "$LOCALE_FILE"
 }
 
+is_canonical_locale_available() {
+  # Une locale canonique '.UTF-8' peut être utilisable même si `locale -a` ne la
+  # liste pas (glibc liste l'alias court 'fr_FR.utf8' uniquement). On vérifie
+  # donc dans cet ordre :
+  #   1. localectl list-locales (source systemd, contient la forme canonique)
+  #   2. locale -a (fallback)
+  #   3. test direct : LANG=xxx LC_ALL=xxx locale → exit 0 si utilisable
+  local canonical="$1"
+  if command -v localectl &>/dev/null && \
+     localectl list-locales 2>/dev/null | grep -Fxq "$canonical"; then
+    return 0
+  fi
+  if locale -a 2>/dev/null | grep -Fxq "$canonical"; then
+    return 0
+  fi
+  LANG="$canonical" LC_ALL="$canonical" locale >/dev/null 2>&1
+}
+
 ensure_canonical_locale_available() {
-  # Vérifie qu'au moins une locale canonique .UTF-8 du LANG visé est compilée.
   local lang_value
   lang_value="$(grep -E '^LANG=' "$LOCALE_FILE" 2>/dev/null | head -1 | sed -E 's/^LANG=//; s/"//g')"
   if [ -z "$lang_value" ]; then
@@ -51,12 +68,11 @@ ensure_canonical_locale_available() {
   fi
   local canonical
   canonical="$(printf '%s\n' "$lang_value" | canonicalize)"
-  if locale -a 2>/dev/null | grep -Fxq "$canonical"; then
-    echo "✓ Locale canonique '$canonical' déjà compilée."
+  if is_canonical_locale_available "$canonical"; then
+    echo "✓ Locale canonique '$canonical' utilisable."
     return 0
   fi
-  echo "⚠ Locale canonique '$canonical' absente de 'locale -a'."
-  # Tente l'installation automatique sur Fedora/Nobara
+  echo "⚠ Locale canonique '$canonical' non utilisable — installation requise."
   if command -v dnf &>/dev/null; then
     local lang_short
     lang_short="$(printf '%s\n' "$canonical" | cut -d_ -f1 | tr '[:upper:]' '[:lower:]')"
@@ -73,10 +89,10 @@ ensure_canonical_locale_available() {
     echo "Gestionnaire de paquets non reconnu — installe manuellement la locale '$canonical'." >&2
     return 1
   fi
-  locale -a 2>/dev/null | grep -Fxq "$canonical" || {
+  if ! is_canonical_locale_available "$canonical"; then
     echo "Échec : '$canonical' toujours indisponible après installation." >&2
     return 1
-  }
+  fi
 }
 
 apply_fix() {

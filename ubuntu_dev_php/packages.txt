@@ -1,0 +1,46 @@
+# Outils de base
+build-essential
+curl
+git
+ca-certificates
+gnupg
+unzip
+wget
+apt-transport-https
+software-properties-common
+
+# PHP 8.x + extensions courantes
+php-cli
+php-common
+php-mbstring
+php-xml
+php-zip
+php-curl
+php-mysql
+php-pgsql
+php-sqlite3
+php-bcmath
+php-intl
+php-gd
+php-imagick
+php-redis
+php-soap
+php-xdebug
+
+# Clients DB
+sqlite3
+postgresql-client
+default-mysql-client
+
+# Node (pour Vite/Mix dans Laravel/Symfony) installé via NVM en post_install
+# Utilitaires dev
+bat
+ripgrep
+fzf
+jq
+htop
+tree
+tmux
+gh
+rsync
+zsh

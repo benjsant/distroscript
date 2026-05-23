@@ -1,0 +1,54 @@
+#!/bin/bash
+set -euo pipefail
+
+BOX_NAME="ubuntu_dev_data"
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+LIB_DIR="$SCRIPT_DIR/../lib"
+HOME_DIR="$HOME/distrobox/$BOX_NAME"
+LOG_FILE="$HOME/distrobox/${BOX_NAME}_install.log"
+
+source "$LIB_DIR/common.sh"
+source "$LIB_DIR/versions.sh"
+
+check_not_root
+force_utf8_locale
+enable_logging "$LOG_FILE"
+print_host_summary
+check_or_recreate_box "$BOX_NAME" "$HOME_DIR"
+
+mkdir -p "$HOME_DIR"
+cp "$SCRIPT_DIR/post_install.sh" "$HOME_DIR/"
+cp "$SCRIPT_DIR/packages.txt" "$HOME_DIR/"
+cp "$LIB_DIR/versions.sh" "$HOME_DIR/"
+
+EXTRA_FLAGS=""
+detect_nvidia
+
+echo "Création de la distrobox '$BOX_NAME'..."
+
+distrobox-create \
+  --name "$BOX_NAME" \
+  --image "$UBUNTU_IMAGE" \
+  --home "$HOME_DIR" \
+  --additional-flags "$EXTRA_FLAGS"
+
+echo "Lancement du post-install..."
+
+distrobox enter "$BOX_NAME" -- bash ~/post_install.sh
+
+echo "Vérification..."
+distrobox enter "$BOX_NAME" -- bash -lc "
+  command -v duckdb &>/dev/null     && duckdb --version | sed 's/^/  [ok] duckdb /' || echo '  [!!] duckdb manquant'
+  command -v uv &>/dev/null         && echo '  [ok] uv'      || echo '  [!!] uv manquant'
+  command -v pgcli &>/dev/null      && echo '  [ok] pgcli'   || echo '  [!!] pgcli manquant'
+  command -v mycli &>/dev/null      && echo '  [ok] mycli'   || echo '  [!!] mycli manquant'
+  command -v litecli &>/dev/null    && echo '  [ok] litecli' || echo '  [!!] litecli manquant'
+  command -v harlequin &>/dev/null  && echo '  [ok] harlequin' || echo '  [!!] harlequin manquant'
+  command -v jupyter &>/dev/null    && echo '  [ok] jupyter' || echo '  [!!] jupyter manquant'
+  [ -d \$HOME/data_env ]            && echo '  [ok] venv data_env' || echo '  [!!] venv data_env manquant'
+  command -v gh &>/dev/null         && echo '  [ok] gh'      || echo '  [!!] gh manquant'
+" || true
+
+echo ""
+echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"
+echo "Activer le venv : source ~/data_env/bin/activate"

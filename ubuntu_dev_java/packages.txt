@@ -1,0 +1,25 @@
+# SDKMAN gère lui-même les JDK/Maven/Gradle — on n'installe RIEN via apt côté Java
+# pour éviter les conflits PATH.
+
+# Outils de base requis par SDKMAN et le build natif
+build-essential
+curl
+git
+ca-certificates
+gnupg
+unzip
+zip
+wget
+
+# Utilitaires dev
+bat
+ripgrep
+fzf
+jq
+htop
+tree
+tmux
+gh
+rsync
+zsh
+bash-completion

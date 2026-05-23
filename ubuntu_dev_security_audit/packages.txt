@@ -1,0 +1,28 @@
+# Outils de base
+build-essential
+curl
+git
+ca-certificates
+gnupg
+unzip
+wget
+apt-transport-https
+software-properties-common
+
+# Python pour Semgrep (installé via uv en post_install)
+python3
+python3-pip
+python3-venv
+
+# Utilitaires dev
+bat
+ripgrep
+fzf
+jq
+yq
+htop
+tree
+tmux
+gh
+rsync
+zsh

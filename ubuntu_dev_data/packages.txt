@@ -1,0 +1,45 @@
+# Outils de base
+build-essential
+curl
+git
+ca-certificates
+gnupg
+unzip
+wget
+pkg-config
+cmake
+
+# Compilation Python wheels (sources)
+libssl-dev
+libffi-dev
+libpq-dev
+default-libmysqlclient-dev
+libsqlite3-dev
+libxml2-dev
+libxslt1-dev
+liblzma-dev
+zlib1g-dev
+
+# Clients SQL natifs
+sqlite3
+postgresql-client
+default-mysql-client
+
+# Python
+python3
+python3-pip
+python3-venv
+python3-dev
+
+# Utilitaires dev
+bat
+ripgrep
+fzf
+jq
+htop
+tree
+tmux
+gh
+rsync
+zsh
+graphviz

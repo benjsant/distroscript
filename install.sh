@@ -57,12 +57,21 @@ else
 fi
 
 echo "Quelle distrobox installer ?"
-echo "1) ubuntu_dev_hugo"
-echo "2) ubuntu_dev_python"
-echo "3) ubuntu_dev_ia"
-echo "4) ubuntu_dev_rust"
-echo "5) ubuntu_dev_n8n"
-echo "q) Quitter"
+echo " 1) ubuntu_dev_hugo"
+echo " 2) ubuntu_dev_python"
+echo " 3) ubuntu_dev_ia"
+echo " 4) ubuntu_dev_rust"
+echo " 5) ubuntu_dev_n8n"
+echo " 6) ubuntu_dev_go"
+echo " 7) ubuntu_dev_devops"
+echo " 8) ubuntu_dev_dotnet"
+echo " 9) ubuntu_dev_writing"
+echo "10) ubuntu_dev_data"
+echo "11) ubuntu_dev_php"
+echo "12) ubuntu_dev_java"
+echo "13) ubuntu_dev_video"
+echo "14) ubuntu_dev_security_audit"
+echo " q) Quitter"
 read -rp "> " choix
 
 case "$choix" in
@@ -80,6 +89,33 @@ case "$choix" in
     ;;
   5)
     "$SCRIPT_DIR/ubuntu_dev_n8n/install.sh"
+    ;;
+  6)
+    "$SCRIPT_DIR/ubuntu_dev_go/install.sh"
+    ;;
+  7)
+    "$SCRIPT_DIR/ubuntu_dev_devops/install.sh"
+    ;;
+  8)
+    "$SCRIPT_DIR/ubuntu_dev_dotnet/install.sh"
+    ;;
+  9)
+    "$SCRIPT_DIR/ubuntu_dev_writing/install.sh"
+    ;;
+  10)
+    "$SCRIPT_DIR/ubuntu_dev_data/install.sh"
+    ;;
+  11)
+    "$SCRIPT_DIR/ubuntu_dev_php/install.sh"
+    ;;
+  12)
+    "$SCRIPT_DIR/ubuntu_dev_java/install.sh"
+    ;;
+  13)
+    "$SCRIPT_DIR/ubuntu_dev_video/install.sh"
+    ;;
+  14)
+    "$SCRIPT_DIR/ubuntu_dev_security_audit/install.sh"
     ;;
   q|Q)
     exit 0

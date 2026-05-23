@@ -1,0 +1,26 @@
+# Outils de build
+build-essential
+pkg-config
+gcc
+git
+curl
+ca-certificates
+
+# Utilitaires dev
+bat
+ripgrep
+fzf
+jq
+htop
+tree
+unzip
+tmux
+gh
+rsync
+lsof
+strace
+zsh
+
+# Outils utiles côté Go (CGO, sqlite drivers, etc.)
+libsqlite3-dev
+sqlite3

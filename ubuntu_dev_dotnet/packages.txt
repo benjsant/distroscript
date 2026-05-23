@@ -1,0 +1,28 @@
+# Outils de base
+build-essential
+curl
+git
+ca-certificates
+gnupg
+apt-transport-https
+unzip
+wget
+
+# Dépendances .NET
+libicu-dev
+libssl-dev
+libkrb5-3
+zlib1g
+
+# Utilitaires dev
+bat
+ripgrep
+fzf
+jq
+htop
+tree
+tmux
+gh
+rsync
+zsh
+bash-completion

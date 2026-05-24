@@ -16,6 +16,54 @@ force_utf8_locale() {
   export LC_ALL=C.UTF-8
 }
 
+# True si /etc/locale.conf contient au moins une entrée ".utf8" non canonique
+# (forme rejetée par update-locale d'Ubuntu).
+locale_conf_is_non_canonical() {
+  [ -r /etc/locale.conf ] || return 1
+  grep -Eiq '^[A-Z_]+=.*\.(utf8|UTF8)([^A-Za-z0-9_-]|$)' /etc/locale.conf
+}
+
+# À appeler dans les install.sh des boxes Ubuntu : détecte un locale.conf hôte
+# non canonique et propose de lancer fix_locale.sh tout de suite — sinon la
+# première entrée dans la box plantera avec "Installing basic packages... Error".
+# Le helper ne fait RIEN si tout est propre.
+check_locale_for_ubuntu_box() {
+  if ! locale_conf_is_non_canonical; then
+    return 0
+  fi
+
+  # Localise fix_locale.sh par rapport au common.sh (donc indépendant du caller)
+  local repo_root fix_script
+  repo_root="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/.."
+  fix_script="${repo_root}/fix_locale.sh"
+
+  echo ""
+  echo "⚠ /etc/locale.conf contient des entrées non canoniques (.utf8 au lieu de .UTF-8)."
+  echo "  C'est la cause connue du bug 'Installing basic packages... Error: An error occurred'"
+  echo "  qui apparaît au premier 'distrobox enter' sur les images Ubuntu."
+  echo ""
+
+  if [ ! -x "$fix_script" ]; then
+    echo "  Script fix_locale.sh introuvable à $fix_script" >&2
+    echo "  Corrige la locale manuellement puis relance cet install." >&2
+    exit 1
+  fi
+
+  read -rp "Lancer fix_locale.sh maintenant ? [O/n] " ans
+  if [[ "$ans" =~ ^[nN]$ ]]; then
+    echo "⚠ Tu continues sans appliquer le fix — la création de la box risque d'échouer."
+    return 0
+  fi
+
+  "$fix_script" --apply
+  echo ""
+  echo "ℹ /etc/locale.conf a été réécrit. distrobox-init lira cette nouvelle"
+  echo "  version pour la box que tu vas créer (pas besoin de relogger pour ça)."
+  echo "  Une déconnexion/reconnexion reste nécessaire pour que TON shell hôte"
+  echo "  prenne la nouvelle locale."
+  echo ""
+}
+
 check_or_recreate_box() {
   local box_name="$1"
   local home_dir="$2"

@@ -14,6 +14,7 @@ check_not_root
 force_utf8_locale
 enable_logging "$LOG_FILE"
 print_host_summary
+check_locale_for_ubuntu_box
 
 # Détection GPU
 MODE="cpu"

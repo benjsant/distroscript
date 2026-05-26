@@ -2,6 +2,7 @@
 set -euo pipefail
 
 source ~/versions.sh
+source ~/shell_setup.sh
 
 PACKAGE_FILE="$HOME/packages.txt"
 
@@ -19,14 +20,15 @@ if [ ! -d "$HOME/.sdkman" ]; then
   curl -s "https://get.sdkman.io?rcupdate=false" | bash
 fi
 
+# Mode non interactif AVANT le sourcing (SDKMAN lit ces vars depuis son config)
+if [ -f "$HOME/.sdkman/etc/config" ]; then
+  sed -i 's/^sdkman_auto_answer=.*/sdkman_auto_answer=true/' "$HOME/.sdkman/etc/config"
+  sed -i 's/^sdkman_selfupdate_feature=.*/sdkman_selfupdate_feature=false/' "$HOME/.sdkman/etc/config"
+fi
+
 # shellcheck disable=SC1091
 export SDKMAN_DIR="$HOME/.sdkman"
 source "$SDKMAN_DIR/bin/sdkman-init.sh"
-
-# Mode non interactif (sinon SDKMAN demande confirmation à chaque install)
-yes() { command yes "$@"; }
-sdkman_auto_answer=true
-sdkman_selfupdate_enable=false
 
 # JDK Temurin LTS (21) + 17 pour compat
 JDK_LTS="21.0.5-tem"
@@ -58,25 +60,11 @@ export SDKMAN_DIR="$HOME/.sdkman"
 EOF
 fi
 
-if ! grep -q 'PS1=.*📦' ~/.bashrc; then
-  echo 'export PS1="📦[\u@\h \W]\\$ "' >> ~/.bashrc
-fi
+setup_prompt_and_aliases
 
-if ! grep -q "alias code=" ~/.bashrc; then
-  echo "alias code='code --no-sandbox'" >> ~/.bashrc
-fi
-
-# Zsh
-if command -v zsh &>/dev/null && [ ! -f ~/.zshrc ]; then
-  cat > ~/.zshrc << 'EOF'
+setup_zsh_with_body <<'EOF'
 export SDKMAN_DIR="$HOME/.sdkman"
 [ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ] && . "$SDKMAN_DIR/bin/sdkman-init.sh"
-
-alias code='code --no-sandbox'
-alias ll='ls -lah'
-export PROMPT='[%n@%m %1~]%# '
 EOF
-  chsh -s "$(which zsh)" 2>/dev/null || true
-fi
 
 echo "Installation Java terminée. $(java --version | head -1)"

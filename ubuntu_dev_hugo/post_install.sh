@@ -2,6 +2,7 @@
 set -euo pipefail
 
 source ~/versions.sh
+source ~/shell_setup.sh
 
 sudo apt update && sudo apt upgrade -y
 
@@ -43,28 +44,13 @@ if ! command -v node &>/dev/null; then
     nvm install --lts
 fi
 
-# Prompt et alias
-if ! grep -q 'PS1=.*📦' ~/.bashrc; then
-    echo 'export PS1="📦[\u@\h \W]\\$ "' >> ~/.bashrc
-fi
+setup_prompt_and_aliases
 
-if ! grep -q "alias code=" ~/.bashrc; then
-    echo "alias code='code --no-sandbox'" >> ~/.bashrc
-fi
-
-# Zsh
-if command -v zsh &>/dev/null && [ ! -f ~/.zshrc ]; then
-    cat > ~/.zshrc << 'EOF'
+setup_zsh_with_body <<'EOF'
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" 2>/dev/null || true
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-
-alias code='code --no-sandbox'
-alias ll='ls -lah'
-export PROMPT='[%n@%m %1~]%# '
 EOF
-    chsh -s "$(which zsh)" 2>/dev/null || true
-fi
 
 echo "Installation terminée."

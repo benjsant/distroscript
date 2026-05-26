@@ -2,6 +2,7 @@
 set -euo pipefail
 
 source ~/versions.sh
+source ~/shell_setup.sh
 
 PACKAGE_FILE="$HOME/packages.txt"
 
@@ -13,15 +14,13 @@ fi
 sudo apt update && sudo apt upgrade -y
 grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt install -y
 
-LOCAL_BIN="$HOME/.local/bin"
-mkdir -p "$LOCAL_BIN"
+setup_local_bin
 
 # uv (gestionnaire de venvs / installeur ultra-rapide)
 if ! command -v uv &>/dev/null && [ ! -f "$LOCAL_BIN/uv" ]; then
   echo "Installation de uv..."
   curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
-export PATH="$LOCAL_BIN:$PATH"
 
 # DuckDB CLI
 if ! command -v duckdb &>/dev/null; then
@@ -68,34 +67,15 @@ uv pip install --upgrade \
 python -m ipykernel install --user --name data_env --display-name "Python (data_env)" 2>/dev/null || true
 deactivate
 
-# .bashrc
-if ! grep -q 'HOME/.local/bin' ~/.bashrc; then
-  echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-fi
-
-if ! grep -q 'PS1=.*📦' ~/.bashrc; then
-  echo 'export PS1="📦[\u@\h \W]\\$ "' >> ~/.bashrc
-fi
-
-if ! grep -q "alias code=" ~/.bashrc; then
-  echo "alias code='code --no-sandbox'" >> ~/.bashrc
-fi
+setup_prompt_and_aliases
 
 if ! grep -q "alias data-env=" ~/.bashrc; then
   echo "alias data-env='source ~/data_env/bin/activate'" >> ~/.bashrc
 fi
 
-# Zsh
-if command -v zsh &>/dev/null && [ ! -f ~/.zshrc ]; then
-  cat > ~/.zshrc << 'EOF'
-export PATH="$HOME/.local/bin:$PATH"
-alias code='code --no-sandbox'
-alias ll='ls -lah'
+setup_zsh_with_body <<'EOF'
 alias data-env='source ~/data_env/bin/activate'
-export PROMPT='[%n@%m %1~]%# '
 EOF
-  chsh -s "$(which zsh)" 2>/dev/null || true
-fi
 
 echo "Installation data terminée."
 echo "Activer le venv : data-env  (ou source ~/data_env/bin/activate)"

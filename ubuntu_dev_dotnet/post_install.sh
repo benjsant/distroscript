@@ -2,6 +2,7 @@
 set -euo pipefail
 
 source ~/versions.sh
+source ~/shell_setup.sh
 
 PACKAGE_FILE="$HOME/packages.txt"
 
@@ -48,33 +49,19 @@ dotnet tool install --global dotnet-ef        2>/dev/null || dotnet tool update 
 dotnet tool install --global dotnet-format    2>/dev/null || dotnet tool update --global dotnet-format
 dotnet tool install --global dotnet-outdated-tool 2>/dev/null || dotnet tool update --global dotnet-outdated-tool
 
-# Désactiver la télémétrie .NET dans la box
+# Désactiver la télémétrie .NET et ajouter le PATH dotnet
 if ! grep -q 'DOTNET_CLI_TELEMETRY_OPTOUT' ~/.bashrc; then
-  echo 'export DOTNET_CLI_TELEMETRY_OPTOUT=1' >> ~/.bashrc
+  cat >> ~/.bashrc <<'EOF'
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export PATH="$HOME/.dotnet/tools:$PATH"
+EOF
 fi
 
-if ! grep -q '\.dotnet/tools' ~/.bashrc; then
-  echo 'export PATH="$HOME/.dotnet/tools:$PATH"' >> ~/.bashrc
-fi
+setup_prompt_and_aliases
 
-if ! grep -q 'PS1=.*📦' ~/.bashrc; then
-  echo 'export PS1="📦[\u@\h \W]\\$ "' >> ~/.bashrc
-fi
-
-if ! grep -q "alias code=" ~/.bashrc; then
-  echo "alias code='code --no-sandbox'" >> ~/.bashrc
-fi
-
-# Zsh
-if command -v zsh &>/dev/null && [ ! -f ~/.zshrc ]; then
-  cat > ~/.zshrc << 'EOF'
+setup_zsh_with_body <<'EOF'
 export PATH="$HOME/.dotnet/tools:$PATH"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
-alias code='code --no-sandbox'
-alias ll='ls -lah'
-export PROMPT='[%n@%m %1~]%# '
 EOF
-  chsh -s "$(which zsh)" 2>/dev/null || true
-fi
 
 echo "Installation .NET terminée. $(dotnet --version)"

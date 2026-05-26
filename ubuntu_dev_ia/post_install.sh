@@ -2,9 +2,11 @@
 set -euo pipefail
 
 source ~/versions.sh
+source ~/shell_setup.sh
 
 MODE="${1:-cpu}"
 
+# 1. Système
 sudo apt update && sudo apt upgrade -y
 
 if [ ! -f ~/packages.txt ]; then
@@ -13,15 +15,13 @@ if [ ! -f ~/packages.txt ]; then
 fi
 grep -v '^\s*#' ~/packages.txt | grep -v '^\s*$' | xargs -r sudo apt install -y
 
-# Ollama
-if ! command -v ollama &>/dev/null; then
-  echo "Installation d'Ollama..."
-else
-  echo "Mise à jour d'Ollama..."
-fi
+setup_local_bin
+
+# 2. Ollama (install ou update — l'installeur officiel gère les deux cas)
+echo "Installation / mise à jour d'Ollama..."
 curl -fsSL https://ollama.com/install.sh | sh
 
-# pyenv
+# 3. pyenv
 if [ ! -d "$HOME/.pyenv" ]; then
   echo "Installation de pyenv..."
   curl https://pyenv.run | bash
@@ -30,17 +30,27 @@ else
 fi
 
 if ! grep -q 'PYENV_ROOT' ~/.bashrc; then
-  echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
-  echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
-  echo 'eval "$(pyenv init --path)"' >> ~/.bashrc
-  echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+  cat >> ~/.bashrc <<'EOF'
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+EOF
 fi
 
+# 4. uv
+if ! command -v uv &>/dev/null && [ ! -f "$LOCAL_BIN/uv" ]; then
+  echo "Installation de uv..."
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
+
+# 5. Init env pour la suite
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)" 2>/dev/null || true
 
+# 6. Installation de Python via pyenv (dernière 3.9-3.13 dispo)
 LATEST_PYTHON=$(pyenv install --list | grep -E '^\s*3\.(9|10|11|12|13)\.[0-9]+$' | tail -1 | tr -d ' ') || true
 if [ -z "$LATEST_PYTHON" ]; then
   echo "Impossible de déterminer la version Python à installer." >&2
@@ -49,21 +59,7 @@ fi
 pyenv install -s "$LATEST_PYTHON"
 pyenv global "$LATEST_PYTHON"
 
-# Alias VS Code
-if ! grep -q "alias code=" ~/.bashrc; then
-    echo "alias code='code --no-sandbox'" >> ~/.bashrc
-fi
-
-# uv
-if ! command -v uv &>/dev/null && [ ! -f "$HOME/.local/bin/uv" ]; then
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    if ! grep -q 'HOME/.local/bin' ~/.bashrc; then
-        echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-    fi
-fi
-export PATH="$HOME/.local/bin:$PATH"
-
-# PyTorch selon le mode GPU
+# 7. PyTorch selon le mode GPU
 case "$MODE" in
   nvidia)
     nvidia-smi 2>/dev/null || echo "nvidia-smi non disponible — vérifiez les drivers sur l'hôte" >&2
@@ -71,7 +67,7 @@ case "$MODE" in
     python3 -c "import torch; print('PyTorch', torch.__version__, '| CUDA:', torch.cuda.is_available())" || true
     ;;
   rocm)
-    ROCM_MOUNT=$(find /opt -maxdepth 1 -type d -name "rocm*" 2>/dev/null | sort | tail -1)
+    ROCM_MOUNT=$(find /opt /usr/lib64 /usr/lib -maxdepth 1 -type d -name "rocm*" 2>/dev/null | sort | tail -1)
     if [ -n "$ROCM_MOUNT" ]; then
       if ! grep -q "$ROCM_MOUNT/bin" ~/.bashrc; then
         echo "export PATH=\"\$PATH:$ROCM_MOUNT/bin\"" >> ~/.bashrc
@@ -80,7 +76,7 @@ case "$MODE" in
       export PATH="$PATH:$ROCM_MOUNT/bin"
       rocm-smi 2>/dev/null || echo "rocm-smi non disponible — vérifiez les drivers ROCm sur l'hôte" >&2
     else
-      echo "Dossier ROCm non trouvé dans /opt" >&2
+      echo "Dossier ROCm non trouvé" >&2
     fi
     pip install torch torchvision torchaudio --index-url "$TORCH_ROCM_INDEX"
     python3 -c "import torch; print('PyTorch', torch.__version__)" || true
@@ -94,23 +90,13 @@ case "$MODE" in
     ;;
 esac
 
-# Prompt personnalisé
-if ! grep -q 'PS1=.*📦' ~/.bashrc; then
-    echo 'export PS1="📦[\u@\h \W]\\$ "' >> ~/.bashrc
-fi
+# 8. Prompt, alias, Zsh — en dernier
+setup_prompt_and_aliases
 
-# Zsh
-if command -v zsh &>/dev/null && [ ! -f ~/.zshrc ]; then
-    cat > ~/.zshrc << 'EOF'
+setup_zsh_with_body <<'EOF'
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$HOME/.local/bin:$PATH"
 eval "$(pyenv init -)" 2>/dev/null || true
-
-alias code='code --no-sandbox'
-alias ll='ls -lah'
-export PROMPT='[%n@%m %1~]%# '
 EOF
-    chsh -s "$(which zsh)" 2>/dev/null || true
-fi
 
 echo "Installation terminée. Python: $LATEST_PYTHON | PyTorch: mode $MODE"

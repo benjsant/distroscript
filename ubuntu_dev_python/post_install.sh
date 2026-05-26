@@ -2,6 +2,7 @@
 set -euo pipefail
 
 source ~/versions.sh
+source ~/shell_setup.sh
 
 PACKAGE_FILE="$HOME/packages.txt"
 
@@ -10,10 +11,13 @@ if [ ! -f "$PACKAGE_FILE" ]; then
   exit 1
 fi
 
+# 1. Système
 sudo apt update && sudo apt upgrade -y
 grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt install -y
 
-# pyenv
+setup_local_bin
+
+# 2. Installation des managers (pyenv, NVM, uv)
 if [ ! -d "$HOME/.pyenv" ]; then
   echo "Installation de pyenv..."
   curl https://pyenv.run | bash
@@ -21,69 +25,62 @@ else
   git -C "$HOME/.pyenv" pull
 fi
 
-if ! grep -q 'PYENV_ROOT' ~/.bashrc; then
-  echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
-  echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
-  echo 'eval "$(pyenv init --path)"' >> ~/.bashrc
-  echo 'eval "$(pyenv init -)"' >> ~/.bashrc
-fi
-
-# NVM + Node.js LTS
 if [ ! -d "$HOME/.nvm" ]; then
-  echo "Installation de NVM..."
-  curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
+  echo "Installation de NVM $NVM_VERSION..."
+  curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
 fi
 
+if ! command -v uv &>/dev/null && [ ! -f "$LOCAL_BIN/uv" ]; then
+  echo "Installation de uv..."
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
+
+# 3. .bashrc : tous les exports + hooks en un seul bloc
+if ! grep -q 'PYENV_ROOT' ~/.bashrc; then
+  cat >> ~/.bashrc <<'EOF'
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
+EOF
+fi
+
+if ! grep -q 'NVM_DIR' ~/.bashrc; then
+  cat >> ~/.bashrc <<'EOF'
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-
-if ! command -v node &>/dev/null; then
-    nvm install --lts
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+EOF
 fi
 
-# Prompt et alias
-if ! grep -q 'PS1=.*📦' ~/.bashrc; then
-    echo 'export PS1="📦[\u@\h \W]\\$ "' >> ~/.bashrc
-fi
-
-if ! grep -q "alias code=" ~/.bashrc; then
-    echo "alias code='code --no-sandbox'" >> ~/.bashrc
-fi
-
-# Python via pyenv
+# 4. Init env pour la suite du script
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)" 2>/dev/null || true
 
+export NVM_DIR="$HOME/.nvm"
+# shellcheck disable=SC1091
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+# 5. Installation des runtimes (Python via pyenv, Node via NVM)
 pyenv install -s "$PYTHON_VERSION"
 pyenv global "$PYTHON_VERSION"
 
-# uv
-if ! command -v uv &>/dev/null && [ ! -f "$HOME/.local/bin/uv" ]; then
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    if ! grep -q 'HOME/.local/bin' ~/.bashrc; then
-        echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-    fi
+if ! command -v node &>/dev/null; then
+  nvm install --lts
 fi
-export PATH="$HOME/.local/bin:$PATH"
 
-# Zsh
-if command -v zsh &>/dev/null && [ ! -f ~/.zshrc ]; then
-    cat > ~/.zshrc << 'EOF'
+# 6. Prompt, alias et Zsh — en dernier
+setup_prompt_and_aliases
+
+setup_zsh_with_body <<'EOF'
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$HOME/.local/bin:$PATH"
 eval "$(pyenv init -)" 2>/dev/null || true
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-
-alias code='code --no-sandbox'
-alias ll='ls -lah'
-export PROMPT='[%n@%m %1~]%# '
 EOF
-    chsh -s "$(which zsh)" 2>/dev/null || true
-fi
 
-echo "Installation terminée."
+echo "Installation terminée. Python $(python --version 2>&1)  Node $(node --version 2>/dev/null || echo '(absent)')"

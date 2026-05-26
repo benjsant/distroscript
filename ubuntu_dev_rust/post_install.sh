@@ -2,6 +2,7 @@
 set -euo pipefail
 
 source ~/versions.sh
+source ~/shell_setup.sh
 
 PACKAGE_FILE="$HOME/packages.txt"
 
@@ -38,24 +39,10 @@ if ! grep -q '\.cargo/env' ~/.bashrc; then
   echo '. "$HOME/.cargo/env"' >> ~/.bashrc
 fi
 
-if ! grep -q 'PS1=.*📦' ~/.bashrc; then
-  echo 'export PS1="📦[\u@\h \W]\\$ "' >> ~/.bashrc
-fi
+setup_prompt_and_aliases
 
-if ! grep -q "alias code=" ~/.bashrc; then
-  echo "alias code='code --no-sandbox'" >> ~/.bashrc
-fi
-
-# Zsh
-if command -v zsh &>/dev/null && [ ! -f ~/.zshrc ]; then
-  cat > ~/.zshrc << 'EOF'
+setup_zsh_with_body <<'EOF'
 . "$HOME/.cargo/env" 2>/dev/null || true
-
-alias code='code --no-sandbox'
-alias ll='ls -lah'
-export PROMPT='[%n@%m %1~]%# '
 EOF
-  chsh -s "$(which zsh)" 2>/dev/null || true
-fi
 
 echo "Installation terminée. $(rustc --version)"

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 source ~/versions.sh
+source ~/shell_setup.sh
 
 PACKAGE_FILE="$HOME/packages.txt"
 
@@ -13,8 +14,7 @@ fi
 sudo apt update && sudo apt upgrade -y
 grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt install -y
 
-LOCAL_BIN="$HOME/.local/bin"
-mkdir -p "$LOCAL_BIN"
+setup_local_bin
 
 # NVM + Node (pour Marp)
 if [ ! -d "$HOME/.nvm" ]; then
@@ -64,30 +64,11 @@ export NVM_DIR="$HOME/.nvm"
 EOF
 fi
 
-if ! grep -q 'HOME/.local/bin' ~/.bashrc; then
-  echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-fi
+setup_prompt_and_aliases
 
-if ! grep -q 'PS1=.*📦' ~/.bashrc; then
-  echo 'export PS1="📦[\u@\h \W]\\$ "' >> ~/.bashrc
-fi
-
-if ! grep -q "alias code=" ~/.bashrc; then
-  echo "alias code='code --no-sandbox'" >> ~/.bashrc
-fi
-
-# Zsh
-if command -v zsh &>/dev/null && [ ! -f ~/.zshrc ]; then
-  cat > ~/.zshrc << 'EOF'
-export PATH="$HOME/.local/bin:$PATH"
+setup_zsh_with_body <<'EOF'
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-
-alias code='code --no-sandbox'
-alias ll='ls -lah'
-export PROMPT='[%n@%m %1~]%# '
 EOF
-  chsh -s "$(which zsh)" 2>/dev/null || true
-fi
 
 echo "Installation writing terminée. $(pandoc --version | head -1)"

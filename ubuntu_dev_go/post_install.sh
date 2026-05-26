@@ -2,6 +2,7 @@
 set -euo pipefail
 
 source ~/versions.sh
+source ~/shell_setup.sh
 
 PACKAGE_FILE="$HOME/packages.txt"
 
@@ -49,33 +50,19 @@ go install golang.org/x/tools/cmd/goimports@latest
 
 # .bashrc
 if ! grep -q 'GOROOT=' ~/.bashrc; then
-  cat >> ~/.bashrc << EOF
-export GOROOT="\$HOME/.local/go"
-export GOPATH="\$HOME/go"
-export PATH="\$GOROOT/bin:\$GOPATH/bin:\$PATH"
-EOF
-fi
-
-if ! grep -q 'PS1=.*📦' ~/.bashrc; then
-  echo 'export PS1="📦[\u@\h \W]\\$ "' >> ~/.bashrc
-fi
-
-if ! grep -q "alias code=" ~/.bashrc; then
-  echo "alias code='code --no-sandbox'" >> ~/.bashrc
-fi
-
-# Zsh
-if command -v zsh &>/dev/null && [ ! -f ~/.zshrc ]; then
-  cat > ~/.zshrc << 'EOF'
+  cat >> ~/.bashrc << 'EOF'
 export GOROOT="$HOME/.local/go"
 export GOPATH="$HOME/go"
 export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
-
-alias code='code --no-sandbox'
-alias ll='ls -lah'
-export PROMPT='[%n@%m %1~]%# '
 EOF
-  chsh -s "$(which zsh)" 2>/dev/null || true
 fi
+
+setup_prompt_and_aliases
+
+setup_zsh_with_body <<'EOF'
+export GOROOT="$HOME/.local/go"
+export GOPATH="$HOME/go"
+export PATH="$GOROOT/bin:$GOPATH/bin:$PATH"
+EOF
 
 echo "Installation terminée. $(go version)"

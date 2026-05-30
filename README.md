@@ -40,6 +40,7 @@ Chaque environnement est basé sur Ubuntu 24.04 et préinstallé avec les outils
 | 12 | `ubuntu_dev_java` | Ubuntu 24.04 | SDKMAN!, Temurin JDK 21/17 LTS, Maven, Gradle, Spring Boot CLI |
 | 13 | `ubuntu_dev_video` | Ubuntu 24.04 | ffmpeg, yt-dlp, mkvtoolnix, HandBrakeCLI, mediainfo, whisper.cpp |
 | 14 | `ubuntu_dev_security_audit` | Ubuntu 24.04 | Trivy, Syft, Grype, Semgrep, Cosign, Gitleaks, TruffleHog, Checkov |
+| 15 | `ubuntu_dev_flutter` | Ubuntu 24.04 | Flutter SDK (stable), Dart, Linux desktop + Web (Chromium) |
 
 > Tous les environnements incluent les utilitaires : `bat`, `ripgrep`, `fzf`, `jq`, `htop`, `tmux`, `tree`, `gh`, `zsh`
 >
@@ -132,6 +133,7 @@ les scripts restent disponibles à la main :
 ├── ubuntu_dev_java/
 ├── ubuntu_dev_video/
 ├── ubuntu_dev_security_audit/
+├── ubuntu_dev_flutter/
 └── fedora_gaming/        # Environnement avancé (non affiché dans le menu)
     ├── install.sh
     ├── setup_repos.sh
@@ -191,6 +193,14 @@ les scripts restent disponibles à la main :
 ### **ubuntu_dev_java**
 
 - **SDKMAN!** : gère plusieurs JDK — `sdk list java` pour les versions disponibles, `sdk install java X.Y.Z-tem` pour ajouter un Temurin
+
+* * *
+
+### **ubuntu_dev_flutter**
+
+- **Cibles installées** : Linux desktop + Web (Chromium). Android **n'est pas installé par défaut** — l'émulateur Android nécessite KVM et `adb` veut accéder à l'USB, ce qui complique l'exposition depuis l'hôte.
+- **Ajouter Android plus tard** : installer `commandline-tools` officiel + `sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"` + `flutter config --android-sdk ~/Android/Sdk`
+- **Premier lancement** : `flutter precache` télécharge le Dart SDK interne et les outils Linux/Web (~1 Go, fait en post-install)
 
 * * *
 

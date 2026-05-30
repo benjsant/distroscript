@@ -71,6 +71,7 @@ echo "11) ubuntu_dev_php"
 echo "12) ubuntu_dev_java"
 echo "13) ubuntu_dev_video"
 echo "14) ubuntu_dev_security_audit"
+echo "15) ubuntu_dev_flutter"
 echo " q) Quitter"
 read -rp "> " choix
 
@@ -116,6 +117,9 @@ case "$choix" in
     ;;
   14)
     "$SCRIPT_DIR/ubuntu_dev_security_audit/install.sh"
+    ;;
+  15)
+    "$SCRIPT_DIR/ubuntu_dev_flutter/install.sh"
     ;;
   q|Q)
     exit 0

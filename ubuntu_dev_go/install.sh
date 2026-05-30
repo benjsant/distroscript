@@ -39,13 +39,13 @@ echo "Lancement du post-install..."
 distrobox enter "$BOX_NAME" -- bash -c 'bash ~/post_install.sh'
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -lc "
+distrobox enter "$BOX_NAME" -- bash -ic "
   command -v go &>/dev/null      && go version | sed 's/^/  [ok] /' || echo '  [!!] go manquant'
   command -v gopls &>/dev/null   && echo '  [ok] gopls'   || echo '  [!!] gopls manquant'
   command -v dlv &>/dev/null     && echo '  [ok] delve'   || echo '  [!!] delve manquant'
   command -v air &>/dev/null     && echo '  [ok] air'     || echo '  [!!] air manquant'
   command -v gh &>/dev/null      && echo '  [ok] gh'      || echo '  [!!] gh manquant'
-" || true
+" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

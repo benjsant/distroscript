@@ -39,14 +39,14 @@ echo "Lancement du post-install..."
 distrobox enter "$BOX_NAME" -- bash -c 'bash ~/post_install.sh'
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -lc "
+distrobox enter "$BOX_NAME" -- bash -ic "
   command -v php &>/dev/null       && php -v | head -1 | sed 's/^/  [ok] /' || echo '  [!!] php manquant'
   command -v composer &>/dev/null  && echo '  [ok] composer'         || echo '  [!!] composer manquant'
   command -v symfony &>/dev/null   && echo '  [ok] symfony cli'      || echo '  [!!] symfony cli manquant'
   command -v laravel &>/dev/null   && echo '  [ok] laravel installer' || echo '  [!!] laravel manquant'
   php -m 2>/dev/null | grep -qi xdebug && echo '  [ok] xdebug'       || echo '  [!!] xdebug manquant'
   command -v gh &>/dev/null        && echo '  [ok] gh'               || echo '  [!!] gh manquant'
-" || true
+" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

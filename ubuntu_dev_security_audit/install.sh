@@ -39,7 +39,7 @@ echo "Lancement du post-install..."
 distrobox enter "$BOX_NAME" -- bash -c 'bash ~/post_install.sh'
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -lc "
+distrobox enter "$BOX_NAME" -- bash -ic "
   command -v trivy &>/dev/null     && echo '  [ok] trivy'    || echo '  [!!] trivy manquant'
   command -v syft &>/dev/null      && echo '  [ok] syft'     || echo '  [!!] syft manquant'
   command -v grype &>/dev/null     && echo '  [ok] grype'    || echo '  [!!] grype manquant'
@@ -48,7 +48,7 @@ distrobox enter "$BOX_NAME" -- bash -lc "
   command -v gitleaks &>/dev/null  && echo '  [ok] gitleaks' || echo '  [!!] gitleaks manquant'
   command -v trufflehog &>/dev/null && echo '  [ok] trufflehog' || echo '  [!!] trufflehog manquant'
   command -v gh &>/dev/null        && echo '  [ok] gh'       || echo '  [!!] gh manquant'
-" || true
+" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

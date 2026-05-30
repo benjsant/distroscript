@@ -39,7 +39,7 @@ echo "Lancement du post-install..."
 distrobox enter "$BOX_NAME" -- bash -c 'bash ~/post_install.sh'
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -lc "
+distrobox enter "$BOX_NAME" -- bash -ic "
   command -v duckdb &>/dev/null     && duckdb --version | sed 's/^/  [ok] duckdb /' || echo '  [!!] duckdb manquant'
   command -v uv &>/dev/null         && echo '  [ok] uv'      || echo '  [!!] uv manquant'
   command -v pgcli &>/dev/null      && echo '  [ok] pgcli'   || echo '  [!!] pgcli manquant'
@@ -49,7 +49,7 @@ distrobox enter "$BOX_NAME" -- bash -lc "
   command -v jupyter &>/dev/null    && echo '  [ok] jupyter' || echo '  [!!] jupyter manquant'
   [ -d \$HOME/data_env ]            && echo '  [ok] venv data_env' || echo '  [!!] venv data_env manquant'
   command -v gh &>/dev/null         && echo '  [ok] gh'      || echo '  [!!] gh manquant'
-" || true
+" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

@@ -39,11 +39,11 @@ echo "Lancement du post-install..."
 distrobox enter "$BOX_NAME" -- bash -c 'bash ~/post_install.sh'
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -c "
+distrobox enter "$BOX_NAME" -- bash -ic "
   [ -d \$HOME/.nvm ]                   && echo '  [ok] NVM'      || echo '  [!!] NVM manquant'
   [ -d /home/linuxbrew/.linuxbrew ]    && echo '  [ok] Homebrew' || echo '  [!!] Homebrew manquant'
   command -v gh &>/dev/null            && echo '  [ok] gh'       || echo '  [!!] gh manquant'
-" || true
+" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

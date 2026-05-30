@@ -80,14 +80,14 @@ echo "Lancement du post-install (mode $MODE)..."
 distrobox enter "$BOX_NAME" -- bash -c "~/post_install.sh $MODE"
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -c "
+distrobox enter "$BOX_NAME" -- bash -ic "
   command -v ollama &>/dev/null         && echo '  [ok] Ollama'   || echo '  [!!] Ollama manquant'
   [ -d \$HOME/.pyenv ]                  && echo '  [ok] pyenv'    || echo '  [!!] pyenv manquant'
   \$HOME/.pyenv/shims/python3 -c 'import torch; print(\"  [ok] PyTorch\", torch.__version__)' 2>/dev/null \
     || echo '  [!!] PyTorch manquant'
   [ -f \$HOME/.local/bin/uv ]           && echo '  [ok] uv'       || echo '  [!!] uv manquant'
   command -v gh &>/dev/null             && echo '  [ok] gh'       || echo '  [!!] gh manquant'
-" || true
+" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

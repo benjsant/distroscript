@@ -39,13 +39,13 @@ echo "Lancement du post-install..."
 distrobox enter "$BOX_NAME" -- bash -c 'bash ~/post_install.sh'
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -lc "
+distrobox enter "$BOX_NAME" -- bash -ic "
   command -v dotnet &>/dev/null     && dotnet --version | sed 's/^/  [ok] dotnet /' || echo '  [!!] dotnet manquant'
   command -v pwsh &>/dev/null       && pwsh --version | sed 's/^/  [ok] /' || echo '  [!!] pwsh manquant'
   command -v az &>/dev/null         && echo '  [ok] az'      || echo '  [!!] az manquant'
   command -v dotnet-ef &>/dev/null  && echo '  [ok] dotnet-ef' || echo '  [!!] dotnet-ef manquant'
   command -v gh &>/dev/null         && echo '  [ok] gh'      || echo '  [!!] gh manquant'
-" || true
+" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

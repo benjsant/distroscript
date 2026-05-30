@@ -39,7 +39,7 @@ echo "Lancement du post-install..."
 distrobox enter "$BOX_NAME" -- bash -c 'bash ~/post_install.sh'
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -lc "
+distrobox enter "$BOX_NAME" -- bash -ic "
   command -v ffmpeg &>/dev/null     && ffmpeg -version | head -1 | sed 's/^/  [ok] /' || echo '  [!!] ffmpeg manquant'
   command -v yt-dlp &>/dev/null     && echo '  [ok] yt-dlp'      || echo '  [!!] yt-dlp manquant'
   command -v mkvmerge &>/dev/null   && echo '  [ok] mkvtoolnix'  || echo '  [!!] mkvtoolnix manquant'
@@ -48,7 +48,7 @@ distrobox enter "$BOX_NAME" -- bash -lc "
   command -v exiftool &>/dev/null   && echo '  [ok] exiftool'    || echo '  [!!] exiftool manquant'
   [ -x \$HOME/.local/bin/whisper-cli ] && echo '  [ok] whisper.cpp' || echo '  [!!] whisper.cpp manquant'
   command -v gh &>/dev/null         && echo '  [ok] gh'          || echo '  [!!] gh manquant'
-" || true
+" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

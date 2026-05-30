@@ -35,10 +35,10 @@ echo "Lancement du post-install..."
 distrobox enter "$BOX_NAME" -- bash -c 'bash ~/post_install.sh'
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -c "
+distrobox enter "$BOX_NAME" -- bash -ic "
   command -v node &>/dev/null && echo '  [ok] node '$(node --version 2>/dev/null) || echo '  [!!] node manquant'
   command -v n8n &>/dev/null  && echo '  [ok] n8n'  || echo '  [!!] n8n manquant'
-" || true
+" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

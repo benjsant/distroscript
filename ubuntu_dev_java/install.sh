@@ -39,14 +39,14 @@ echo "Lancement du post-install..."
 distrobox enter "$BOX_NAME" -- bash -c 'bash ~/post_install.sh'
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -lc "
+distrobox enter "$BOX_NAME" -- bash -ic "
   [ -d \$HOME/.sdkman ]                && echo '  [ok] SDKMAN'    || echo '  [!!] SDKMAN manquant'
   command -v java &>/dev/null          && java --version | head -1 | sed 's/^/  [ok] /' || echo '  [!!] java manquant'
   command -v mvn &>/dev/null           && echo '  [ok] maven'     || echo '  [!!] maven manquant'
   command -v gradle &>/dev/null        && echo '  [ok] gradle'    || echo '  [!!] gradle manquant'
   command -v spring &>/dev/null        && echo '  [ok] spring boot cli' || echo '  [!!] spring boot manquant'
   command -v gh &>/dev/null            && echo '  [ok] gh'        || echo '  [!!] gh manquant'
-" || true
+" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

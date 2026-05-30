@@ -39,12 +39,12 @@ echo "Lancement du post-install..."
 distrobox enter "$BOX_NAME" -- bash -c 'bash ~/post_install.sh'
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -c "
+distrobox enter "$BOX_NAME" -- bash -ic "
   [ -d \$HOME/.pyenv ]              && echo '  [ok] pyenv' || echo '  [!!] pyenv manquant'
   [ -d \$HOME/.nvm ]                && echo '  [ok] NVM'   || echo '  [!!] NVM manquant'
   [ -f \$HOME/.local/bin/uv ]       && echo '  [ok] uv'    || echo '  [!!] uv manquant'
   command -v gh &>/dev/null         && echo '  [ok] gh'    || echo '  [!!] gh manquant'
-" || true
+" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

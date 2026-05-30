@@ -39,7 +39,7 @@ echo "Lancement du post-install..."
 distrobox enter "$BOX_NAME" -- bash -c 'bash ~/post_install.sh'
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -lc "
+distrobox enter "$BOX_NAME" -- bash -ic "
   command -v kubectl &>/dev/null    && echo '  [ok] kubectl'    || echo '  [!!] kubectl manquant'
   command -v helm &>/dev/null       && echo '  [ok] helm'       || echo '  [!!] helm manquant'
   command -v terraform &>/dev/null  && echo '  [ok] terraform'  || echo '  [!!] terraform manquant'
@@ -51,7 +51,7 @@ distrobox enter "$BOX_NAME" -- bash -lc "
   command -v gcloud &>/dev/null     && echo '  [ok] gcloud'     || echo '  [!!] gcloud manquant'
   command -v az &>/dev/null         && echo '  [ok] az'         || echo '  [!!] az manquant'
   command -v gh &>/dev/null         && echo '  [ok] gh'         || echo '  [!!] gh manquant'
-" || true
+" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

@@ -32,7 +32,7 @@ distrobox-create \
 
 echo "Lancement du post-install..."
 
-distrobox enter "$BOX_NAME" -- bash ~/post_install.sh
+distrobox enter "$BOX_NAME" -- bash -c 'bash ~/post_install.sh'
 
 echo "Vérification..."
 distrobox enter "$BOX_NAME" -- bash -c "

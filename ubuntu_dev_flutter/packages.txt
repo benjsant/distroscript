@@ -9,6 +9,8 @@ xz-utils
 zip
 
 # Build Linux desktop (Flutter)
+clang
+clang-tools
 cmake
 ninja-build
 pkg-config
@@ -16,8 +18,8 @@ libgtk-3-dev
 libstdc++-12-dev
 mesa-utils
 
-# Tooling debug / web
-chromium-browser
+# Tooling debug / web : Google Chrome installé via repo officiel en post_install
+# (chromium-browser sur Ubuntu 24.04 est un transitional vers snap, KO dans Distrobox)
 
 # Utilitaires dev
 bat

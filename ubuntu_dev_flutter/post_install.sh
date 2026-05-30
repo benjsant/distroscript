@@ -17,7 +17,15 @@ grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt install -y
 
 setup_local_bin
 
-# 2. Flutter SDK : git clone du repo officiel sur le canal demandé
+# 2. Google Chrome (Flutter cherche "google-chrome" pour le device "chrome")
+if ! command -v google-chrome &>/dev/null; then
+  echo "Installation de Google Chrome (pour Flutter web)..."
+  curl -fsSL https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -o /tmp/chrome.deb
+  sudo apt install -y /tmp/chrome.deb
+  rm -f /tmp/chrome.deb
+fi
+
+# 3. Flutter SDK : git clone du repo officiel sur le canal demandé
 FLUTTER_ROOT="$HOME/.local/flutter"
 if [ ! -d "$FLUTTER_ROOT" ]; then
   echo "Clonage du SDK Flutter (canal: $FLUTTER_CHANNEL)..."
@@ -29,10 +37,10 @@ else
   git -C "$FLUTTER_ROOT" pull --ff-only origin "$FLUTTER_CHANNEL" || true
 fi
 
-# 3. Trust dir Git (Flutter le demande sinon il refuse de tourner)
+# 4. Trust dir Git (Flutter le demande sinon il refuse de tourner)
 git config --global --add safe.directory "$FLUTTER_ROOT"
 
-# 4. Exports + init env
+# 5. Exports + init env
 if ! grep -q 'FLUTTER_ROOT=' ~/.bashrc; then
   cat >> ~/.bashrc <<'EOF'
 export FLUTTER_ROOT="$HOME/.local/flutter"
@@ -43,21 +51,21 @@ fi
 export FLUTTER_ROOT="$HOME/.local/flutter"
 export PATH="$FLUTTER_ROOT/bin:$FLUTTER_ROOT/bin/cache/dart-sdk/bin:$HOME/.pub-cache/bin:$PATH"
 
-# 5. Premier appel : Flutter télécharge Dart SDK + outils internes
+# 6. Premier appel : Flutter télécharge Dart SDK + outils internes
 echo "Initialisation de Flutter (téléchargement du Dart SDK interne)..."
 flutter --version || true
 flutter precache --linux --web --no-android --no-ios --no-macos --no-windows --no-fuchsia || true
 
-# 6. Désactivation de la télémétrie + activation Linux desktop + Web
+# 7. Désactivation de la télémétrie + activation Linux desktop + Web
 flutter --disable-analytics 2>/dev/null || true
 flutter config --no-analytics 2>/dev/null || true
 flutter config --enable-linux-desktop
 flutter config --enable-web
 
-# 7. Diagnostic non bloquant
+# 8. Diagnostic non bloquant
 flutter doctor -v || true
 
-# 8. Prompt, alias, Zsh
+# 9. Prompt, alias, Zsh
 setup_prompt_and_aliases
 
 setup_zsh_with_body <<'EOF'

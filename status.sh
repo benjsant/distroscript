@@ -6,25 +6,36 @@ source "$SCRIPT_DIR/lib/common.sh"
 
 check_not_root
 
-BOXES=("ubuntu_dev_hugo" "ubuntu_dev_python" "ubuntu_dev_ia" "ubuntu_dev_rust" "ubuntu_dev_n8n")
+# Auto-discovery : tous les dossiers contenant un install.sh, sauf le install.sh racine
+mapfile -t BOXES < <(
+  find "$SCRIPT_DIR" -maxdepth 2 -name install.sh -not -path "$SCRIPT_DIR/install.sh" \
+    -printf '%h\n' | xargs -n1 basename | sort
+)
 
 echo ""
 echo "DistroScript — état des environnements"
 echo "---------------------------------------"
 echo ""
 
+installed_list="$(distrobox list 2>/dev/null || true)"
+
 for box in "${BOXES[@]}"; do
   home_dir="$HOME/distrobox/$box"
-  if distrobox list 2>/dev/null | grep -q "$box"; then
+  if echo "$installed_list" | grep -q "$box"; then
     home_size="?"
     if [ -d "$home_dir" ]; then
-      home_size=$(du -sh "$home_dir" 2>/dev/null | cut -f1)
+      home_size="$(du -sh "$home_dir" 2>/dev/null | cut -f1)"
     fi
-    echo "[ok] $box  ($home_size)"
+    printf "  [ok] %-30s (%s)\n" "$box" "$home_size"
   else
-    echo "[--] $box  non installé"
+    printf "  [--] %-30s non installé\n" "$box"
   fi
 done
+
+echo ""
+echo "Environnement hôte"
+echo "------------------"
+print_host_summary
 
 echo ""
 echo "GPU hôte"
@@ -38,6 +49,9 @@ if command -v lspci &>/dev/null; then
       || true
   elif lspci | grep -iE 'AMD|ATI|Radeon' &>/dev/null; then
     echo "AMD/Radeon"
+    if rocm_path="$(detect_rocm_path 2>/dev/null)"; then
+      echo "  ROCm trouvé : $rocm_path"
+    fi
   else
     echo "aucun GPU dédié"
   fi

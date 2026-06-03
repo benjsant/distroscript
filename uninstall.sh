@@ -2,11 +2,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+source "$SCRIPT_DIR/lib/common.sh"
 
-if [ "$EUID" -eq 0 ]; then
-  echo "Ce script ne doit pas être lancé en tant que root." >&2
-  exit 1
-fi
+check_not_root
 
 # Auto-discovery : tous les dossiers contenant un install.sh, sauf le install.sh racine
 mapfile -t BOXES < <(
@@ -16,7 +14,7 @@ mapfile -t BOXES < <(
 
 remove_box() {
   local name="$1"
-  if distrobox list | grep -q "$name"; then
+  if box_exists "$name"; then
     echo "Suppression de $name..."
     distrobox rm "$name" --force
     rm -rf "$HOME/distrobox/$name"

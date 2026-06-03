@@ -44,9 +44,10 @@ fi
 if ! command -v k9s &>/dev/null; then
   echo "Installation de k9s..."
   K9S_VER="$(curl -fsSL https://api.github.com/repos/derailed/k9s/releases/latest | jq -r .tag_name)"
-  curl -fsSL "https://github.com/derailed/k9s/releases/download/${K9S_VER}/k9s_Linux_amd64.tar.gz" -o /tmp/k9s.tgz
-  tar -xzf /tmp/k9s.tgz -C "$LOCAL_BIN" k9s
-  rm -f /tmp/k9s.tgz
+  tmp_tgz="$(mktemp --suffix=.tgz)"
+  curl -fsSL "https://github.com/derailed/k9s/releases/download/${K9S_VER}/k9s_Linux_amd64.tar.gz" -o "$tmp_tgz"
+  tar -xzf "$tmp_tgz" -C "$LOCAL_BIN" k9s
+  rm -f "$tmp_tgz"
 fi
 
 # Kustomize (script officiel)
@@ -66,10 +67,12 @@ fi
 # AWS CLI v2
 if ! command -v aws &>/dev/null; then
   echo "Installation d'awscli v2..."
-  curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
-  unzip -q /tmp/awscliv2.zip -d /tmp
-  sudo /tmp/aws/install --update
-  rm -rf /tmp/aws /tmp/awscliv2.zip
+  tmp_zip="$(mktemp --suffix=.zip)"
+  tmp_dir="$(mktemp -d)"
+  curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "$tmp_zip"
+  unzip -q "$tmp_zip" -d "$tmp_dir"
+  sudo "$tmp_dir/aws/install" --update
+  rm -rf "$tmp_zip" "$tmp_dir"
 fi
 
 # Google Cloud CLI

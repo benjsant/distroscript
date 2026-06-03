@@ -20,9 +20,10 @@ setup_local_bin
 # 2. Google Chrome (Flutter cherche "google-chrome" pour le device "chrome")
 if ! command -v google-chrome &>/dev/null; then
   echo "Installation de Google Chrome (pour Flutter web)..."
-  curl -fsSL https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -o /tmp/chrome.deb
-  sudo apt install -y /tmp/chrome.deb
-  rm -f /tmp/chrome.deb
+  tmp_deb="$(mktemp --suffix=.deb)"
+  curl -fsSL https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -o "$tmp_deb"
+  sudo apt install -y "$tmp_deb"
+  rm -f "$tmp_deb"
 fi
 
 # 3. Flutter SDK : git clone du repo officiel sur le canal demandé

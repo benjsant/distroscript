@@ -17,11 +17,9 @@ echo "DistroScript — état des environnements"
 echo "---------------------------------------"
 echo ""
 
-installed_list="$(distrobox list 2>/dev/null || true)"
-
 for box in "${BOXES[@]}"; do
   home_dir="$HOME/distrobox/$box"
-  if echo "$installed_list" | grep -q "$box"; then
+  if box_exists "$box"; then
     home_size="?"
     if [ -d "$home_dir" ]; then
       home_size="$(du -sh "$home_dir" 2>/dev/null | cut -f1)"

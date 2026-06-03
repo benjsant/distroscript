@@ -59,10 +59,11 @@ fi
 if ! command -v gitleaks &>/dev/null; then
   echo "Installation de Gitleaks..."
   GL_VER="$(curl -fsSL https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r .tag_name | sed 's/^v//')"
+  tmp_tgz="$(mktemp --suffix=.tgz)"
   curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GL_VER}/gitleaks_${GL_VER}_linux_x64.tar.gz" \
-    -o /tmp/gitleaks.tgz
-  tar -xzf /tmp/gitleaks.tgz -C "$LOCAL_BIN" gitleaks
-  rm -f /tmp/gitleaks.tgz
+    -o "$tmp_tgz"
+  tar -xzf "$tmp_tgz" -C "$LOCAL_BIN" gitleaks
+  rm -f "$tmp_tgz"
 fi
 
 # TruffleHog (autre détection de secrets, complémentaire à gitleaks)

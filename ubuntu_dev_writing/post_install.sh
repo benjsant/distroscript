@@ -39,9 +39,10 @@ fi
 if ! command -v vale &>/dev/null; then
   echo "Installation de Vale..."
   VALE_VER="$(curl -fsSL https://api.github.com/repos/errata-ai/vale/releases/latest | jq -r .tag_name | sed 's/^v//')"
-  curl -fsSL "https://github.com/errata-ai/vale/releases/download/v${VALE_VER}/vale_${VALE_VER}_Linux_64-bit.tar.gz" -o /tmp/vale.tgz
-  tar -xzf /tmp/vale.tgz -C "$LOCAL_BIN" vale
-  rm -f /tmp/vale.tgz
+  tmp_tgz="$(mktemp --suffix=.tgz)"
+  curl -fsSL "https://github.com/errata-ai/vale/releases/download/v${VALE_VER}/vale_${VALE_VER}_Linux_64-bit.tar.gz" -o "$tmp_tgz"
+  tar -xzf "$tmp_tgz" -C "$LOCAL_BIN" vale
+  rm -f "$tmp_tgz"
 fi
 
 # Pandoc Eisvogel template (template PDF élégant très utilisé)
@@ -50,10 +51,12 @@ if [ ! -f "$EISVOGEL_DIR/eisvogel.latex" ]; then
   echo "Installation du template Pandoc Eisvogel..."
   mkdir -p "$EISVOGEL_DIR"
   EIS_VER="$(curl -fsSL https://api.github.com/repos/Wandmalfarbe/pandoc-latex-template/releases/latest | jq -r .tag_name)"
-  curl -fsSL "https://github.com/Wandmalfarbe/pandoc-latex-template/releases/download/${EIS_VER}/Eisvogel-${EIS_VER#v}.tar.gz" -o /tmp/eisvogel.tgz
-  tar -xzf /tmp/eisvogel.tgz -C /tmp
-  find /tmp -name 'eisvogel.latex' -exec cp {} "$EISVOGEL_DIR/" \;
-  rm -rf /tmp/eisvogel.tgz /tmp/eisvogel-*
+  tmp_tgz="$(mktemp --suffix=.tgz)"
+  tmp_dir="$(mktemp -d)"
+  curl -fsSL "https://github.com/Wandmalfarbe/pandoc-latex-template/releases/download/${EIS_VER}/Eisvogel-${EIS_VER#v}.tar.gz" -o "$tmp_tgz"
+  tar -xzf "$tmp_tgz" -C "$tmp_dir"
+  find "$tmp_dir" -name 'eisvogel.latex' -exec cp {} "$EISVOGEL_DIR/" \;
+  rm -rf "$tmp_tgz" "$tmp_dir"
 fi
 
 # .bashrc

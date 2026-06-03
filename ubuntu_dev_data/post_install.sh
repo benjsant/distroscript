@@ -26,9 +26,10 @@ fi
 if ! command -v duckdb &>/dev/null; then
   echo "Installation de DuckDB CLI..."
   DUCK_VER="$(curl -fsSL https://api.github.com/repos/duckdb/duckdb/releases/latest | jq -r .tag_name)"
-  curl -fsSL "https://github.com/duckdb/duckdb/releases/download/${DUCK_VER}/duckdb_cli-linux-amd64.zip" -o /tmp/duckdb.zip
-  unzip -o /tmp/duckdb.zip -d "$LOCAL_BIN"
-  rm -f /tmp/duckdb.zip
+  tmp_zip="$(mktemp --suffix=.zip)"
+  curl -fsSL "https://github.com/duckdb/duckdb/releases/download/${DUCK_VER}/duckdb_cli-linux-amd64.zip" -o "$tmp_zip"
+  unzip -o "$tmp_zip" -d "$LOCAL_BIN"
+  rm -f "$tmp_zip"
 fi
 
 # CLIs SQL via uv tool (isolés, mises à jour faciles)

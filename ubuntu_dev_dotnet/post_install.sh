@@ -19,9 +19,10 @@ UBUNTU_VER="$(lsb_release -rs)"
 # Microsoft package signing key + repo (commun à dotnet et powershell)
 if [ ! -f /etc/apt/sources.list.d/microsoft-prod.list ]; then
   echo "Ajout du dépôt Microsoft..."
-  curl -fsSL "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VER}/packages-microsoft-prod.deb" -o /tmp/ms-prod.deb
-  sudo dpkg -i /tmp/ms-prod.deb
-  rm -f /tmp/ms-prod.deb
+  tmp_deb="$(mktemp --suffix=.deb)"
+  curl -fsSL "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VER}/packages-microsoft-prod.deb" -o "$tmp_deb"
+  sudo dpkg -i "$tmp_deb"
+  rm -f "$tmp_deb"
   sudo apt update
 fi
 

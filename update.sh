@@ -132,7 +132,7 @@ update_npm_global() {
 
 do_update() {
   local name="$1"
-  if ! distrobox list | grep -q "$name"; then
+  if ! box_exists "$name"; then
     echo "$name : non installé, ignoré."
     return
   fi

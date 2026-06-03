@@ -20,15 +20,16 @@ setup_local_bin
 if ! command -v composer &>/dev/null; then
   echo "Installation de Composer..."
   EXPECTED_HASH="$(curl -fsSL https://composer.github.io/installer.sig)"
-  curl -fsSL https://getcomposer.org/installer -o /tmp/composer-setup.php
-  ACTUAL_HASH="$(php -r "echo hash_file('sha384', '/tmp/composer-setup.php');")"
+  tmp_php="$(mktemp --suffix=.php)"
+  curl -fsSL https://getcomposer.org/installer -o "$tmp_php"
+  ACTUAL_HASH="$(php -r "echo hash_file('sha384', '$tmp_php');")"
   if [ "$EXPECTED_HASH" != "$ACTUAL_HASH" ]; then
     echo "Hash Composer invalide — abandon." >&2
-    rm -f /tmp/composer-setup.php
+    rm -f "$tmp_php"
     exit 1
   fi
-  php /tmp/composer-setup.php --install-dir="$LOCAL_BIN" --filename=composer
-  rm -f /tmp/composer-setup.php
+  php "$tmp_php" --install-dir="$LOCAL_BIN" --filename=composer
+  rm -f "$tmp_php"
 fi
 
 export PATH="$LOCAL_BIN:$HOME/.config/composer/vendor/bin:$PATH"

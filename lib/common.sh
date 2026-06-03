@@ -64,10 +64,24 @@ check_locale_for_ubuntu_box() {
   echo ""
 }
 
+# True si une distrobox dont le nom est EXACTEMENT $1 existe.
+# (À utiliser au lieu de "distrobox list | grep -q "$name"" qui matche les
+# préfixes : "ubuntu_dev_go" matche aussi "ubuntu_dev_golang", "godot", etc.
+# Ni grep -qw ne suffit car 'o' et 'l' sont tous deux des word-chars donc
+# pas de word-boundary entre eux.)
+box_exists() {
+  local name="$1"
+  distrobox list --no-color 2>/dev/null | awk -F'|' -v n="$name" '
+    NR == 1 { next }
+    { gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); if ($2 == n) found = 1 }
+    END { exit !found }
+  '
+}
+
 check_or_recreate_box() {
   local box_name="$1"
   local home_dir="$2"
-  if distrobox list | grep -q "$box_name"; then
+  if box_exists "$box_name"; then
     read -rp "La distrobox '$box_name' existe déjà. La supprimer et recréer ? (o/N) " confirm
     if [[ "$confirm" =~ ^[oO]$ ]]; then
       distrobox rm "$box_name" --force

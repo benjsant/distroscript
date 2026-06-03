@@ -56,77 +56,37 @@ else
   echo "VS Code déjà présent sur l'hôte."
 fi
 
+# Auto-discovery : tous les dossiers contenant un install.sh, sauf le install.sh racine.
+# fedora_gaming est exclu : il a des pré-requis lourds (systemd + D-Bus session) et
+# reste accessible directement via ./fedora_gaming/install.sh.
+mapfile -t BOXES < <(
+  find "$SCRIPT_DIR" -maxdepth 2 -name install.sh -not -path "$SCRIPT_DIR/install.sh" \
+    -printf '%h\n' | xargs -n1 basename | grep -v '^fedora_gaming$' | sort
+)
+
+if [ ${#BOXES[@]} -eq 0 ]; then
+  echo "Aucun environnement trouvé." >&2
+  exit 1
+fi
+
 echo "Quelle distrobox installer ?"
-echo " 1) ubuntu_dev_hugo"
-echo " 2) ubuntu_dev_python"
-echo " 3) ubuntu_dev_ia"
-echo " 4) ubuntu_dev_rust"
-echo " 5) ubuntu_dev_n8n"
-echo " 6) ubuntu_dev_go"
-echo " 7) ubuntu_dev_devops"
-echo " 8) ubuntu_dev_dotnet"
-echo " 9) ubuntu_dev_writing"
-echo "10) ubuntu_dev_data"
-echo "11) ubuntu_dev_php"
-echo "12) ubuntu_dev_java"
-echo "13) ubuntu_dev_video"
-echo "14) ubuntu_dev_security_audit"
-echo "15) ubuntu_dev_flutter"
+for i in "${!BOXES[@]}"; do
+  printf "%2d) %s\n" "$((i+1))" "${BOXES[$i]}"
+done
 echo " q) Quitter"
 read -rp "> " choix
 
 case "$choix" in
-  1)
-    "$SCRIPT_DIR/ubuntu_dev_hugo/install.sh"
-    ;;
-  2)
-    "$SCRIPT_DIR/ubuntu_dev_python/install.sh"
-    ;;
-  3)
-    "$SCRIPT_DIR/ubuntu_dev_ia/install.sh"
-    ;;
-  4)
-    "$SCRIPT_DIR/ubuntu_dev_rust/install.sh"
-    ;;
-  5)
-    "$SCRIPT_DIR/ubuntu_dev_n8n/install.sh"
-    ;;
-  6)
-    "$SCRIPT_DIR/ubuntu_dev_go/install.sh"
-    ;;
-  7)
-    "$SCRIPT_DIR/ubuntu_dev_devops/install.sh"
-    ;;
-  8)
-    "$SCRIPT_DIR/ubuntu_dev_dotnet/install.sh"
-    ;;
-  9)
-    "$SCRIPT_DIR/ubuntu_dev_writing/install.sh"
-    ;;
-  10)
-    "$SCRIPT_DIR/ubuntu_dev_data/install.sh"
-    ;;
-  11)
-    "$SCRIPT_DIR/ubuntu_dev_php/install.sh"
-    ;;
-  12)
-    "$SCRIPT_DIR/ubuntu_dev_java/install.sh"
-    ;;
-  13)
-    "$SCRIPT_DIR/ubuntu_dev_video/install.sh"
-    ;;
-  14)
-    "$SCRIPT_DIR/ubuntu_dev_security_audit/install.sh"
-    ;;
-  15)
-    "$SCRIPT_DIR/ubuntu_dev_flutter/install.sh"
-    ;;
   q|Q)
     exit 0
     ;;
   *)
-    echo "Choix invalide." >&2
-    exit 1
+    if [[ "$choix" =~ ^[0-9]+$ ]] && (( choix >= 1 && choix <= ${#BOXES[@]} )); then
+      "$SCRIPT_DIR/${BOXES[$((choix-1))]}/install.sh"
+    else
+      echo "Choix invalide." >&2
+      exit 1
+    fi
     ;;
 esac
 

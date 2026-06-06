@@ -19,7 +19,7 @@ mapfile -t BOXES < <(
 update_packages() {
   local name="$1"
   if [[ "$name" == ubuntu_* ]]; then
-    distrobox enter "$name" -- bash -c 'sudo apt update && sudo apt upgrade -y'
+    distrobox enter "$name" -- bash -c 'sudo apt-get update && sudo apt-get upgrade -y'
   elif [[ "$name" == fedora_* ]]; then
     distrobox enter "$name" -- bash -c 'sudo dnf upgrade -y'
   fi
@@ -90,7 +90,6 @@ update_dotnet_tools() {
   distrobox enter "ubuntu_dev_dotnet" -- bash -c '
     export PATH="$HOME/.dotnet/tools:$PATH"
     dotnet tool update --global dotnet-ef 2>/dev/null || true
-    dotnet tool update --global dotnet-format 2>/dev/null || true
     dotnet tool update --global dotnet-outdated-tool 2>/dev/null || true
   '
 }

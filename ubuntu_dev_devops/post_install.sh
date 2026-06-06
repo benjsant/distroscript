@@ -11,8 +11,8 @@ if [ ! -f "$PACKAGE_FILE" ]; then
   exit 1
 fi
 
-sudo apt update && sudo apt upgrade -y
-grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt install -y
+sudo apt-get update && sudo apt-get upgrade -y
+grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt-get install -y
 
 setup_local_bin
 
@@ -36,8 +36,8 @@ if ! command -v terraform &>/dev/null; then
   curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
   echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
     | sudo tee /etc/apt/sources.list.d/hashicorp.list >/dev/null
-  sudo apt update
-  sudo apt install -y terraform
+  sudo apt-get update
+  sudo apt-get install -y terraform
 fi
 
 # k9s (tarball)
@@ -82,8 +82,8 @@ if ! command -v gcloud &>/dev/null; then
     | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
   echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
     | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list >/dev/null
-  sudo apt update
-  sudo apt install -y google-cloud-cli
+  sudo apt-get update
+  sudo apt-get install -y google-cloud-cli
 fi
 
 # Azure CLI

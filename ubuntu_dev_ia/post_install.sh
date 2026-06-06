@@ -7,13 +7,13 @@ source ~/shell_setup.sh
 MODE="${1:-cpu}"
 
 # 1. Système
-sudo apt update && sudo apt upgrade -y
+sudo apt-get update && sudo apt-get upgrade -y
 
 if [ ! -f ~/packages.txt ]; then
   echo "packages.txt introuvable." >&2
   exit 1
 fi
-grep -v '^\s*#' ~/packages.txt | grep -v '^\s*$' | xargs -r sudo apt install -y
+grep -v '^\s*#' ~/packages.txt | grep -v '^\s*$' | xargs -r sudo apt-get install -y
 
 setup_local_bin
 

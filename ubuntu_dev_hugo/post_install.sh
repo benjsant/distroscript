@@ -4,10 +4,10 @@ set -euo pipefail
 source ~/versions.sh
 source ~/shell_setup.sh
 
-sudo apt update && sudo apt upgrade -y
+sudo apt-get update && sudo apt-get upgrade -y
 
 if [ -f ~/packages.txt ]; then
-    grep -v '^\s*#' ~/packages.txt | grep -v '^\s*$' | xargs -r sudo apt install -y
+    grep -v '^\s*#' ~/packages.txt | grep -v '^\s*$' | xargs -r sudo apt-get install -y
 else
     echo "packages.txt introuvable." >&2
     exit 1

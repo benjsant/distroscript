@@ -12,8 +12,8 @@ if [ ! -f "$PACKAGE_FILE" ]; then
 fi
 
 # 1. Système
-sudo apt update && sudo apt upgrade -y
-grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt install -y
+sudo apt-get update && sudo apt-get upgrade -y
+grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt-get install -y
 
 setup_local_bin
 

@@ -45,8 +45,8 @@ EOF'
       sudo install -o root -g root -m 644 /tmp/microsoft.gpg /etc/apt/trusted.gpg.d/
       rm -f /tmp/microsoft.gpg
       sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
-      sudo apt update
-      sudo apt install -y code
+      sudo apt-get update
+      sudo apt-get install -y code
     else
       echo "Gestionnaire de paquets non reconnu. Installez VS Code manuellement." >&2
     fi

@@ -19,15 +19,15 @@ setup_local_bin
 # uv (gestionnaire de venvs / installeur ultra-rapide)
 if ! command -v uv &>/dev/null && [ ! -f "$LOCAL_BIN/uv" ]; then
   echo "Installation de uv..."
-  curl -LsSf https://astral.sh/uv/install.sh | sh
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -LsSf https://astral.sh/uv/install.sh | sh
 fi
 
 # DuckDB CLI
 if ! command -v duckdb &>/dev/null; then
   echo "Installation de DuckDB CLI..."
-  DUCK_VER="$(curl -fsSL https://api.github.com/repos/duckdb/duckdb/releases/latest | jq -r .tag_name)"
+  DUCK_VER="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://api.github.com/repos/duckdb/duckdb/releases/latest | jq -r .tag_name)"
   tmp_zip="$(mktemp --suffix=.zip)"
-  curl -fsSL "https://github.com/duckdb/duckdb/releases/download/${DUCK_VER}/duckdb_cli-linux-amd64.zip" -o "$tmp_zip"
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://github.com/duckdb/duckdb/releases/download/${DUCK_VER}/duckdb_cli-linux-amd64.zip" -o "$tmp_zip"
   unzip -o "$tmp_zip" -d "$LOCAL_BIN"
   rm -f "$tmp_zip"
 fi

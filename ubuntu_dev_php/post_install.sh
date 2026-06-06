@@ -19,9 +19,9 @@ setup_local_bin
 # Composer (installer officiel — vérifie le hash)
 if ! command -v composer &>/dev/null; then
   echo "Installation de Composer..."
-  EXPECTED_HASH="$(curl -fsSL https://composer.github.io/installer.sig)"
+  EXPECTED_HASH="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://composer.github.io/installer.sig)"
   tmp_php="$(mktemp --suffix=.php)"
-  curl -fsSL https://getcomposer.org/installer -o "$tmp_php"
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://getcomposer.org/installer -o "$tmp_php"
   ACTUAL_HASH="$(php -r "echo hash_file('sha384', '$tmp_php');")"
   if [ "$EXPECTED_HASH" != "$ACTUAL_HASH" ]; then
     echo "Hash Composer invalide — abandon." >&2
@@ -37,7 +37,7 @@ export PATH="$LOCAL_BIN:$HOME/.config/composer/vendor/bin:$PATH"
 # Symfony CLI
 if ! command -v symfony &>/dev/null; then
   echo "Installation de Symfony CLI..."
-  curl -fsSL https://get.symfony.com/cli/installer | bash
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://get.symfony.com/cli/installer | bash
   if [ -d "$HOME/.symfony5/bin" ]; then
     ln -sf "$HOME/.symfony5/bin/symfony" "$LOCAL_BIN/symfony"
   fi
@@ -52,7 +52,7 @@ fi
 # NVM + Node (pour Vite/Mix)
 if [ ! -d "$HOME/.nvm" ]; then
   echo "Installation de NVM $NVM_VERSION..."
-  curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
 fi
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"

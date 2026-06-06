@@ -19,7 +19,7 @@ setup_local_bin
 # NVM + Node (pour Marp)
 if [ ! -d "$HOME/.nvm" ]; then
   echo "Installation de NVM $NVM_VERSION..."
-  curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
 fi
 
 export NVM_DIR="$HOME/.nvm"
@@ -38,9 +38,9 @@ fi
 # Vale (binary)
 if ! command -v vale &>/dev/null; then
   echo "Installation de Vale..."
-  VALE_VER="$(curl -fsSL https://api.github.com/repos/errata-ai/vale/releases/latest | jq -r .tag_name | sed 's/^v//')"
+  VALE_VER="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://api.github.com/repos/errata-ai/vale/releases/latest | jq -r .tag_name | sed 's/^v//')"
   tmp_tgz="$(mktemp --suffix=.tgz)"
-  curl -fsSL "https://github.com/errata-ai/vale/releases/download/v${VALE_VER}/vale_${VALE_VER}_Linux_64-bit.tar.gz" -o "$tmp_tgz"
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://github.com/errata-ai/vale/releases/download/v${VALE_VER}/vale_${VALE_VER}_Linux_64-bit.tar.gz" -o "$tmp_tgz"
   tar -xzf "$tmp_tgz" -C "$LOCAL_BIN" vale
   rm -f "$tmp_tgz"
 fi
@@ -50,10 +50,10 @@ EISVOGEL_DIR="$HOME/.local/share/pandoc/templates"
 if [ ! -f "$EISVOGEL_DIR/eisvogel.latex" ]; then
   echo "Installation du template Pandoc Eisvogel..."
   mkdir -p "$EISVOGEL_DIR"
-  EIS_VER="$(curl -fsSL https://api.github.com/repos/Wandmalfarbe/pandoc-latex-template/releases/latest | jq -r .tag_name)"
+  EIS_VER="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://api.github.com/repos/Wandmalfarbe/pandoc-latex-template/releases/latest | jq -r .tag_name)"
   tmp_tgz="$(mktemp --suffix=.tgz)"
   tmp_dir="$(mktemp -d)"
-  curl -fsSL "https://github.com/Wandmalfarbe/pandoc-latex-template/releases/download/${EIS_VER}/Eisvogel-${EIS_VER#v}.tar.gz" -o "$tmp_tgz"
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://github.com/Wandmalfarbe/pandoc-latex-template/releases/download/${EIS_VER}/Eisvogel-${EIS_VER#v}.tar.gz" -o "$tmp_tgz"
   tar -xzf "$tmp_tgz" -C "$tmp_dir"
   find "$tmp_dir" -name 'eisvogel.latex' -exec cp {} "$EISVOGEL_DIR/" \;
   rm -rf "$tmp_tgz" "$tmp_dir"

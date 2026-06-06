@@ -17,7 +17,7 @@ grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt install -y
 # SDKMAN — gestion multi-versions JDK/Maven/Gradle/Spring
 if [ ! -d "$HOME/.sdkman" ]; then
   echo "Installation de SDKMAN..."
-  curl -s "https://get.sdkman.io?rcupdate=false" | bash
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -s "https://get.sdkman.io?rcupdate=false" | bash
 fi
 
 # Mode non interactif AVANT le sourcing (SDKMAN lit ces vars depuis son config)

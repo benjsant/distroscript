@@ -16,7 +16,7 @@ fi
 # Homebrew
 if ! command -v brew &>/dev/null; then
     echo "Installation de Homebrew..."
-    NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    NONINTERACTIVE=1 bash -c "$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
 BREW_LINE='eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"'
@@ -33,7 +33,7 @@ fi
 # NVM + Node.js LTS
 if [ ! -d "$HOME/.nvm" ]; then
     echo "Installation de NVM..."
-    curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
+    curl --retry 3 --retry-delay 2 --connect-timeout 10 -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
 fi
 
 export NVM_DIR="$HOME/.nvm"

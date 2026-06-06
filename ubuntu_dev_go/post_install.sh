@@ -28,7 +28,7 @@ if [ "$CURRENT_VERSION" != "$GO_VERSION" ]; then
   echo "Installation de Go $GO_VERSION..."
   mkdir -p "$HOME/.local"
   rm -rf "$GO_ROOT"
-  curl -fsSL "https://go.dev/dl/${GO_TARBALL}" -o "/tmp/${GO_TARBALL}"
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://go.dev/dl/${GO_TARBALL}" -o "/tmp/${GO_TARBALL}"
   tar -C "$HOME/.local" -xzf "/tmp/${GO_TARBALL}"
   rm -f "/tmp/${GO_TARBALL}"
 else

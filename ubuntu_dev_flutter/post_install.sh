@@ -21,7 +21,7 @@ setup_local_bin
 if ! command -v google-chrome &>/dev/null; then
   echo "Installation de Google Chrome (pour Flutter web)..."
   tmp_deb="$(mktemp --suffix=.deb)"
-  curl -fsSL https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -o "$tmp_deb"
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -o "$tmp_deb"
   sudo apt install -y "$tmp_deb"
   rm -f "$tmp_deb"
 fi

@@ -20,7 +20,7 @@ UBUNTU_VER="$(lsb_release -rs)"
 if [ ! -f /etc/apt/sources.list.d/microsoft-prod.list ]; then
   echo "Ajout du dépôt Microsoft..."
   tmp_deb="$(mktemp --suffix=.deb)"
-  curl -fsSL "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VER}/packages-microsoft-prod.deb" -o "$tmp_deb"
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VER}/packages-microsoft-prod.deb" -o "$tmp_deb"
   sudo dpkg -i "$tmp_deb"
   rm -f "$tmp_deb"
   sudo apt update
@@ -41,7 +41,7 @@ fi
 # Azure CLI
 if ! command -v az &>/dev/null; then
   echo "Installation d'Azure CLI..."
-  curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 fi
 
 # Outils dotnet globaux

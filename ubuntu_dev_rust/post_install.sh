@@ -17,7 +17,7 @@ grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt install -y
 # rustup
 if [ ! -d "$HOME/.cargo" ]; then
   echo "Installation de rustup..."
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
 fi
 
 . "$HOME/.cargo/env"

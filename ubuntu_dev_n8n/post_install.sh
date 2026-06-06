@@ -17,7 +17,7 @@ grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt install -y
 # NVM + Node.js
 if [ ! -d "$HOME/.nvm" ]; then
   echo "Installation de NVM $NVM_VERSION..."
-  curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh" | bash
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -o- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh" | bash
 fi
 
 export NVM_DIR="$HOME/.nvm"

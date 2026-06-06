@@ -42,7 +42,7 @@ fi
 mkdir -p "$WHISPER_MODELS"
 if [ ! -f "$WHISPER_MODELS/ggml-base.bin" ]; then
   echo "Téléchargement du modèle whisper base..."
-  curl -fL "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin" \
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fL "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin" \
     -o "$WHISPER_MODELS/ggml-base.bin"
 fi
 

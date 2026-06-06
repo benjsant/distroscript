@@ -20,19 +20,19 @@ setup_local_bin
 # 2. Installation des managers (pyenv, NVM, uv)
 if [ ! -d "$HOME/.pyenv" ]; then
   echo "Installation de pyenv..."
-  curl https://pyenv.run | bash
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 https://pyenv.run | bash
 else
   git -C "$HOME/.pyenv" pull
 fi
 
 if [ ! -d "$HOME/.nvm" ]; then
   echo "Installation de NVM $NVM_VERSION..."
-  curl -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
 fi
 
 if ! command -v uv &>/dev/null && [ ! -f "$LOCAL_BIN/uv" ]; then
   echo "Installation de uv..."
-  curl -LsSf https://astral.sh/uv/install.sh | sh
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -LsSf https://astral.sh/uv/install.sh | sh
 fi
 
 # 3. .bashrc : tous les exports + hooks en un seul bloc

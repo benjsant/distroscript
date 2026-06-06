@@ -19,12 +19,12 @@ setup_local_bin
 
 # 2. Ollama (install ou update — l'installeur officiel gère les deux cas)
 echo "Installation / mise à jour d'Ollama..."
-curl -fsSL https://ollama.com/install.sh | sh
+curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://ollama.com/install.sh | sh
 
 # 3. pyenv
 if [ ! -d "$HOME/.pyenv" ]; then
   echo "Installation de pyenv..."
-  curl https://pyenv.run | bash
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 https://pyenv.run | bash
 else
   git -C "$HOME/.pyenv" pull
 fi
@@ -41,7 +41,7 @@ fi
 # 4. uv
 if ! command -v uv &>/dev/null && [ ! -f "$LOCAL_BIN/uv" ]; then
   echo "Installation de uv..."
-  curl -LsSf https://astral.sh/uv/install.sh | sh
+  curl --retry 3 --retry-delay 2 --connect-timeout 10 -LsSf https://astral.sh/uv/install.sh | sh
 fi
 
 # 5. Init env pour la suite

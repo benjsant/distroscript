@@ -41,7 +41,7 @@ gpgkey=https://packages.microsoft.com/keys/microsoft.asc
 EOF'
       sudo dnf install -y code
     elif command -v apt &>/dev/null; then
-      curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg
+      curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg
       sudo install -o root -g root -m 644 /tmp/microsoft.gpg /etc/apt/trusted.gpg.d/
       rm -f /tmp/microsoft.gpg
       sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'

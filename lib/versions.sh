@@ -1,5 +1,9 @@
 #!/bin/bash
 # Versions centralisées — modifier ici pour mettre à jour tous les environnements
+#
+# Fichier de configuration : les variables sont consommées par les scripts qui
+# le sourcent, pas ici. SC2034 (« appears unused ») ne s'applique donc pas.
+# shellcheck disable=SC2034
 
 UBUNTU_IMAGE="quay.io/toolbx/ubuntu-toolbox:24.04"
 FEDORA_IMAGE="quay.io/fedora/fedora-toolbox:41"

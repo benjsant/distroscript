@@ -119,7 +119,8 @@ apply_fix() {
   echo "---"
 
   # Backup horodaté + symlink stable pour rollback
-  local stamped="${BACKUP_FILE}.$(date +%Y%m%d-%H%M%S)"
+  local stamped
+  stamped="${BACKUP_FILE}.$(date +%Y%m%d-%H%M%S)"
   sudo cp -a "$LOCALE_FILE" "$stamped"
   sudo ln -sf "$stamped" "$BACKUP_FILE"
   echo "Backup : $stamped (alias $BACKUP_FILE)"

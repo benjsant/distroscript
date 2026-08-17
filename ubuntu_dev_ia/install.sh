@@ -77,7 +77,7 @@ distrobox-create \
 
 echo "Lancement du post-install (mode $MODE)..."
 
-distrobox enter "$BOX_NAME" -- bash -c "~/post_install.sh $MODE"
+distrobox enter "$BOX_NAME" -- bash -c "bash ~/post_install.sh $MODE"
 
 echo "Vérification..."
 distrobox enter "$BOX_NAME" -- bash -ic "

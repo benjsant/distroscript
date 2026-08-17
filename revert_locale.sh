@@ -67,7 +67,8 @@ restore_file() {
     exit 0
   fi
   # Petit méta-backup de l'actuel avant restore, au cas où
-  local pre_restore="${LOCALE_FILE}.before-revert.$(date +%Y%m%d-%H%M%S)"
+  local pre_restore
+  pre_restore="${LOCALE_FILE}.before-revert.$(date +%Y%m%d-%H%M%S)"
   sudo cp -a "$LOCALE_FILE" "$pre_restore"
   echo "État courant sauvegardé dans : $pre_restore"
   sudo cp -a "$source" "$LOCALE_FILE"

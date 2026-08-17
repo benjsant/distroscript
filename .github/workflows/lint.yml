@@ -1,0 +1,69 @@
+name: lint
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  shellcheck:
+    name: shellcheck + bash -n
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      # Vérification syntaxique : attrape les erreurs qui empêchent le script
+      # de démarrer (quotes non fermées, if/fi dépareillés…).
+      - name: bash -n
+        run: |
+          fail=0
+          while IFS= read -r -d '' f; do
+            bash -n "$f" || { echo "::error file=$f::erreur de syntaxe"; fail=1; }
+          done < <(find . -name '*.sh' -not -path './.git/*' -print0)
+          exit "$fail"
+
+      # Analyse statique : variables non définies, quoting manquant, etc.
+      # Les post_install.sh sourcent des fichiers copiés dans la box à l'exécution
+      # (~/versions.sh, ~/shell_setup.sh), introuvables ici : -e SC1091/SC1090.
+      - name: shellcheck
+        run: |
+          find . -name '*.sh' -not -path './.git/*' -print0 \
+            | xargs -0 shellcheck --severity=warning --external-sources -e SC1091 -e SC1090
+
+  packages:
+    name: cohérence des packages.txt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Un packages.txt ne doit contenir que des noms de paquets et des
+      # commentaires : une ligne avec un espace est presque toujours une faute
+      # de frappe qui casserait le xargs d'installation.
+      - name: Aucune ligne suspecte
+        run: |
+          fail=0
+          while IFS= read -r -d '' f; do
+            if grep -nE '^[^#]*[[:space:]]+[^[:space:]]' "$f"; then
+              echo "::error file=$f::ligne contenant plusieurs mots"
+              fail=1
+            fi
+          done < <(find . -name 'packages*.txt' -not -path './.git/*' -print0)
+          exit "$fail"
+
+      # Chaque environnement doit exposer le trio attendu par les scripts racine.
+      - name: Structure des environnements
+        run: |
+          fail=0
+          for dir in */; do
+            [ -f "${dir}install.sh" ] || continue
+            for required in post_install.sh packages.txt; do
+              if [ ! -f "${dir}${required}" ]; then
+                echo "::error::${dir} n'a pas de ${required}"
+                fail=1
+              fi
+            done
+          done
+          exit "$fail"

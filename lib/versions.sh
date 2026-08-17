@@ -10,7 +10,6 @@ FEDORA_IMAGE="quay.io/fedora/fedora-toolbox:41"
 NVM_VERSION="v0.40.3"
 PYTHON_VERSION="3.13.3"
 GO_VERSION="1.23.5"
-FLUTTER_CHANNEL="stable"
 
 # PyTorch — indices selon le backend GPU
 TORCH_CUDA_INDEX="https://download.pytorch.org/whl/cu124"

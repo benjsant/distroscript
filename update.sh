@@ -25,13 +25,6 @@ update_packages() {
   fi
 }
 
-update_hugo() {
-  distrobox enter "ubuntu_dev_hugo" -- bash -c '
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" 2>/dev/null || true
-    brew update && brew upgrade 2>/dev/null || true
-  '
-}
-
 update_pyenv_uv() {
   local name="$1"
   distrobox enter "$name" -- bash -c '
@@ -94,13 +87,6 @@ update_dotnet_tools() {
   '
 }
 
-update_flutter() {
-  distrobox enter "ubuntu_dev_flutter" -- bash -ic '
-    flutter upgrade 2>/dev/null || true
-    flutter precache --linux --web --no-android --no-ios --no-macos --no-windows --no-fuchsia 2>/dev/null || true
-  ' 2>/dev/null || true
-}
-
 update_composer() {
   distrobox enter "ubuntu_dev_php" -- bash -c '
     export PATH="$HOME/.local/bin:$HOME/.config/composer/vendor/bin:$PATH"
@@ -139,21 +125,22 @@ do_update() {
   echo "--- $name ---"
   update_packages "$name"
   case "$name" in
-    ubuntu_dev_hugo)            update_hugo;             update_nvm "$name" ;;
-    ubuntu_dev_python)          update_pyenv_uv "$name"; update_nvm "$name" ;;
+    ubuntu_dev_python)
+      update_pyenv_uv "$name"; update_nvm "$name"
+      # Le profil data ajoute des outils installés via `uv tool`
+      if [ "$(cat "$HOME/distrobox/$name/.profile_name" 2>/dev/null)" = "data" ]; then
+        update_uv_tools "$name"
+      fi
+      ;;
     ubuntu_dev_ia)              update_pyenv_uv "$name"; update_ollama ;;
     ubuntu_dev_rust)            update_rust ;;
-    ubuntu_dev_n8n)             update_nvm "$name";      update_npm_global "$name" ;;
     ubuntu_dev_go)              update_go_tools ;;
     ubuntu_dev_devops)          : ;;  # apt suffit
     ubuntu_dev_dotnet)          update_dotnet_tools ;;
     ubuntu_dev_writing)         update_nvm "$name";      update_npm_global "$name" ;;
-    ubuntu_dev_data)            update_uv_tools "$name" ;;
     ubuntu_dev_php)             update_composer;         update_nvm "$name" ;;
     ubuntu_dev_java)            update_sdkman ;;
-    ubuntu_dev_video)           : ;;  # apt suffit, whisper.cpp non auto-update
     ubuntu_dev_security_audit)  update_uv_tools "$name" ;;
-    ubuntu_dev_flutter)         update_flutter ;;
     fedora_gaming)              : ;;  # dnf suffit
   esac
   echo "$name : OK"

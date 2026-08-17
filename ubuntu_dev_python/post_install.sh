@@ -4,6 +4,9 @@ set -euo pipefail
 source ~/versions.sh
 source ~/shell_setup.sh
 
+# Profil : "base" (défaut) ou "data" (ajoute DuckDB, JupyterLab, CLIs SQL, venv data_env)
+PROFILE="${1:-base}"
+
 PACKAGE_FILE="$HOME/packages.txt"
 
 if [ ! -f "$PACKAGE_FILE" ]; then
@@ -14,6 +17,11 @@ fi
 # 1. Système
 sudo apt-get update && sudo apt-get upgrade -y
 grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt-get install -y
+
+if [ "$PROFILE" = "data" ] && [ -f "$HOME/packages.data.txt" ]; then
+  echo "Profil data : installation des paquets additionnels..."
+  grep -v '^\s*#' "$HOME/packages.data.txt" | grep -v '^\s*$' | xargs -r sudo apt-get install -y
+fi
 
 setup_local_bin
 
@@ -71,10 +79,72 @@ if ! command -v node &>/dev/null; then
   nvm install --lts
 fi
 
-# 6. Prompt, alias et Zsh — en dernier
+# 6. Profil data — DuckDB, CLIs SQL, venv d'analyse
+if [ "$PROFILE" = "data" ]; then
+  export PATH="$LOCAL_BIN:$PATH"
+
+  # DuckDB CLI
+  if ! command -v duckdb &>/dev/null; then
+    echo "Installation de DuckDB CLI..."
+    DUCK_VER="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL \
+      https://api.github.com/repos/duckdb/duckdb/releases/latest | jq -r '.tag_name // empty')"
+    if [ -z "$DUCK_VER" ]; then
+      echo "  Impossible de résoudre la dernière version de DuckDB (limite API GitHub ?) — étape ignorée." >&2
+    else
+      tmp_zip="$(mktemp --suffix=.zip)"
+      curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL \
+        "https://github.com/duckdb/duckdb/releases/download/${DUCK_VER}/duckdb_cli-linux-amd64.zip" -o "$tmp_zip"
+      unzip -o "$tmp_zip" -d "$LOCAL_BIN"
+      rm -f "$tmp_zip"
+    fi
+  fi
+
+  # CLIs SQL via uv tool (isolés, mises à jour faciles)
+  uv tool install pgcli      2>/dev/null || uv tool upgrade pgcli
+  uv tool install mycli      2>/dev/null || uv tool upgrade mycli
+  uv tool install litecli    2>/dev/null || uv tool upgrade litecli
+  uv tool install harlequin  2>/dev/null || uv tool upgrade harlequin
+
+  # Venv "data_env" prêt à l'emploi avec la stack d'analyse classique
+  DATA_VENV="$HOME/data_env"
+  if [ ! -d "$DATA_VENV" ]; then
+    echo "Création du venv $DATA_VENV..."
+    uv venv "$DATA_VENV" --python "${PYTHON_VERSION%.*}"
+  fi
+
+  # shellcheck disable=SC1091
+  source "$DATA_VENV/bin/activate"
+  uv pip install --upgrade \
+    jupyterlab \
+    ipykernel \
+    pandas \
+    polars \
+    duckdb \
+    pyarrow \
+    numpy \
+    matplotlib \
+    seaborn \
+    plotly \
+    scikit-learn \
+    sqlalchemy \
+    psycopg2-binary \
+    pymysql \
+    requests \
+    httpx \
+    rich
+  python -m ipykernel install --user --name data_env --display-name "Python (data_env)" 2>/dev/null || true
+  deactivate
+
+  if ! grep -q "alias data-env=" ~/.bashrc; then
+    echo "alias data-env='source ~/data_env/bin/activate'" >> ~/.bashrc
+  fi
+fi
+
+# 7. Prompt, alias et Zsh — en dernier
 setup_prompt_and_aliases
 
-setup_zsh_with_body <<'EOF'
+{
+  cat <<'EOF'
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$HOME/.local/bin:$PATH"
 eval "$(pyenv init -)" 2>/dev/null || true
@@ -82,5 +152,12 @@ eval "$(pyenv init -)" 2>/dev/null || true
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 EOF
+  if [ "$PROFILE" = "data" ]; then
+    echo "alias data-env='source ~/data_env/bin/activate'"
+  fi
+} | setup_zsh_with_body
 
-echo "Installation terminée. Python $(python --version 2>&1)  Node $(node --version 2>/dev/null || echo '(absent)')"
+echo "Installation terminée (profil $PROFILE). Python $(python --version 2>&1)  Node $(node --version 2>/dev/null || echo '(absent)')"
+if [ "$PROFILE" = "data" ]; then
+  echo "Activer le venv d'analyse : data-env  (ou source ~/data_env/bin/activate)"
+fi

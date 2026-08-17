@@ -82,7 +82,31 @@ case "$choix" in
     ;;
   *)
     if [[ "$choix" =~ ^[0-9]+$ ]] && (( choix >= 1 && choix <= ${#BOXES[@]} )); then
-      "$SCRIPT_DIR/${BOXES[$((choix-1))]}/install.sh"
+      box_dir="$SCRIPT_DIR/${BOXES[$((choix-1))]}"
+
+      # Profils optionnels : un env qui expose des packages.<profil>.txt propose
+      # ces profils en plus du profil "base" (ex: ubuntu_dev_python --profile data).
+      mapfile -t PROFILES < <(
+        find "$box_dir" -maxdepth 1 -name 'packages.*.txt' -printf '%f\n' 2>/dev/null \
+          | sed -E 's/^packages\.(.*)\.txt$/\1/' | sort
+      )
+
+      if [ ${#PROFILES[@]} -gt 0 ]; then
+        echo ""
+        echo "Cet environnement propose plusieurs profils :"
+        echo "  1) base (par défaut)"
+        for i in "${!PROFILES[@]}"; do
+          printf "  %d) %s\n" "$((i+2))" "${PROFILES[$i]}"
+        done
+        read -rp "> " prof_choix
+        if [[ "$prof_choix" =~ ^[0-9]+$ ]] && (( prof_choix >= 2 && prof_choix <= ${#PROFILES[@]} + 1 )); then
+          "$box_dir/install.sh" --profile "${PROFILES[$((prof_choix-2))]}"
+        else
+          "$box_dir/install.sh"
+        fi
+      else
+        "$box_dir/install.sh"
+      fi
     else
       echo "Choix invalide." >&2
       exit 1

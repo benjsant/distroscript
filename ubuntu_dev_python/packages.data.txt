@@ -1,0 +1,16 @@
+# Paquets additionnels du profil "data" (./install.sh --profile data)
+# Le profil de base (packages.txt) est installé dans tous les cas.
+
+# Build deps des wheels data compilées depuis les sources
+pkg-config
+cmake
+libpq-dev
+default-libmysqlclient-dev
+libxslt1-dev
+
+# Clients SQL natifs
+postgresql-client
+default-mysql-client
+
+# Rendu de graphes (dépendance de certaines libs de viz)
+graphviz

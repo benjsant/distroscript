@@ -13,3 +13,7 @@
 .idea/
 *.swp
 *.swo
+
+# Manifestes distrobox-assemble générés (valeurs propres à une machine)
+distrobox.ini
+*.ini

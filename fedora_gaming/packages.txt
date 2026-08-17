@@ -1,72 +1,85 @@
+# fedora_gaming — tout le nécessaire pour JOUER, dans la box.
+# L'hôte reste propre : aucun paquet wine/steam/mesa n'y est installé.
+#
+# Volontairement absent :
+#   - flatpak / flatseal : flatpak dans un conteneur ne fonctionne pas
+#   - bottles            : upstream ne supporte plus que le flatpak
+#   - dépendances pures (gtk3, qt*-qtbase, libX*, cairo…) : dnf les résout seul
+
+# --- Lanceurs -----------------------------------------------------------
 steam
 lutris
-bottles
-flatpak
-flatseal
-gamemode
+heroic-games-launcher-bin
+protonplus
+
+# --- Wine et compatibilité Windows --------------------------------------
 wine
 wine-core
 wine-mono
 winetricks
+protontricks
 cabextract
-SDL2
-SDL2_image
-SDL2_mixer
-SDL2_net
-SDL2_ttf
-vulkan-loader
-vulkan-tools
-glx-utils
+p7zip
+innoextract
+
+# --- Pilotes graphiques (64 bits) ---------------------------------------
 mesa-vulkan-drivers
+mesa-dri-drivers
 mesa-va-drivers
 mesa-vdpau-drivers
+vulkan-loader
+vulkan-tools
 libva
 libva-utils
 vdpauinfo
 libdrm
-ffmpeg
-gstreamer1-vaapi
-alsa-utils
-pulseaudio-utils
+glx-utils
+
+# --- Pilotes graphiques 32 bits (indispensable : beaucoup de jeux Steam,
+#     et toute la couche Wine 32 bits, sont en i686) ----------------------
+mesa-vulkan-drivers.i686
+mesa-dri-drivers.i686
+vulkan-loader.i686
+
+# --- Overlay, performance, upscaling ------------------------------------
+mangohud
+mangohud.i686
+gamemode
+gamemode.i686
+gamescope
+goverlay
+
+# --- Audio (le socket PipeWire de l'hôte est monté par install.sh) -------
 pipewire
 pipewire-pulseaudio
 wireplumber
 pavucontrol
-joystick
+alsa-utils
+pulseaudio-utils
+
+# --- Manettes -----------------------------------------------------------
+antimicrox
 evtest
+joystick
 libevdev-utils
+
+# --- Émulateurs ---------------------------------------------------------
+dolphin-emu
+ppsspp
+snes9x-gtk
+mgba
+
+# --- Divers -------------------------------------------------------------
+gnome-keyring
+fuse
+fuse-libs
 fuse-overlayfs
 xdg-desktop-portal
 xdg-desktop-portal-gtk
-snes9x-gtk
-dolphin-emu
-ppsspp
+ffmpeg
+gstreamer1-vaapi
 curl
+wget
 git
 unzip
-p7zip
-wget
 htop
-tmux
-python3-pip
-gtk3
-qt5-qtbase
-qt6-qtbase
-gnome-keyring
-libXtst
-libXrandr
-libxkbcommon-x11
-libcanberra-gtk3
-python3-cairo
-python3-gobject
-gobject-introspection-devel
-cairo
-cairo-gobject
-gnome-terminal
-heroic-games-launcher-bin
-protonplus
-xapps
-fuse
-fuse-libs
-antimicrox
-fluidsynth

@@ -26,25 +26,34 @@ Chaque environnement est basé sur Ubuntu 24.04 et préinstallé avec les outils
 
 | # | Nom | Base | Outils principaux |
 | --- | --- | --- | --- |
-| 1 | `ubuntu_dev_hugo` | Ubuntu 24.04 | Hugo, Homebrew, Node (NVM), VS Code, gh |
-| 2 | `ubuntu_dev_python` | Ubuntu 24.04 | pyenv, uv, Node (NVM), VS Code, gh |
-| 3 | `ubuntu_dev_ia` | Ubuntu 24.04 | Ollama, pyenv, uv, PyTorch — GPU NVIDIA/ROCm/CPU |
-| 4 | `ubuntu_dev_rust` | Ubuntu 24.04 | rustup, cargo, clippy, rustfmt, mold |
-| 5 | `ubuntu_dev_n8n` | Ubuntu 24.04 | Node (NVM), n8n |
-| 6 | `ubuntu_dev_go` | Ubuntu 24.04 | Go SDK, gopls, delve, air, staticcheck |
-| 7 | `ubuntu_dev_devops` | Ubuntu 24.04 | kubectl, helm, terraform, ansible, awscli, gcloud, az, k9s, kustomize, kind |
-| 8 | `ubuntu_dev_dotnet` | Ubuntu 24.04 | .NET SDK 8 LTS, PowerShell, Azure CLI |
+| 1 | `ubuntu_dev_python` | Ubuntu 24.04 | pyenv, uv, Node (NVM), VS Code, gh — profil `data` optionnel |
+| 2 | `ubuntu_dev_ia` | Ubuntu 24.04 | Ollama, pyenv, uv, PyTorch — GPU NVIDIA/ROCm/CPU |
+| 3 | `ubuntu_dev_rust` | Ubuntu 24.04 | rustup, cargo, clippy, rustfmt, mold |
+| 4 | `ubuntu_dev_go` | Ubuntu 24.04 | Go SDK, gopls, delve, air, staticcheck |
+| 5 | `ubuntu_dev_java` | Ubuntu 24.04 | SDKMAN!, Temurin JDK 21/17 LTS, Maven, Gradle, Spring Boot CLI |
+| 6 | `ubuntu_dev_php` | Ubuntu 24.04 | PHP 8, Composer, Symfony CLI, Laravel, xdebug, Node (NVM) |
+| 7 | `ubuntu_dev_dotnet` | Ubuntu 24.04 | .NET SDK 8 LTS, PowerShell, Azure CLI |
+| 8 | `ubuntu_dev_devops` | Ubuntu 24.04 | kubectl, helm, terraform, ansible, awscli, gcloud, az, k9s, kustomize, kind |
 | 9 | `ubuntu_dev_writing` | Ubuntu 24.04 | LaTeX (FR/EN), Pandoc (+ Eisvogel), Marp, Vale |
-| 10 | `ubuntu_dev_data` | Ubuntu 24.04 | uv, DuckDB, JupyterLab, pandas, polars, pgcli/mycli/litecli/harlequin |
-| 11 | `ubuntu_dev_php` | Ubuntu 24.04 | PHP 8, Composer, Symfony CLI, Laravel, xdebug, Node (NVM) |
-| 12 | `ubuntu_dev_java` | Ubuntu 24.04 | SDKMAN!, Temurin JDK 21/17 LTS, Maven, Gradle, Spring Boot CLI |
-| 13 | `ubuntu_dev_video` | Ubuntu 24.04 | ffmpeg, yt-dlp, mkvtoolnix, HandBrakeCLI, mediainfo, whisper.cpp |
-| 14 | `ubuntu_dev_security_audit` | Ubuntu 24.04 | Trivy, Syft, Grype, Semgrep, Cosign, Gitleaks, TruffleHog, Checkov |
-| 15 | `ubuntu_dev_flutter` | Ubuntu 24.04 | Flutter SDK (stable), Dart, Linux desktop + Web (Chromium) |
+| 10 | `ubuntu_dev_security_audit` | Ubuntu 24.04 | Trivy, Syft, Grype, Semgrep, Cosign, Gitleaks, TruffleHog, Checkov |
+| 11 | `fedora_gaming` | Fedora 43 | Steam, Lutris, Heroic, Wine, Proton, MangoHud, gamescope, émulateurs |
 
-> Tous les environnements incluent les utilitaires : `bat`, `ripgrep`, `fzf`, `jq`, `htop`, `tmux`, `tree`, `gh`, `zsh`
->
-> Un environnement avancé `fedora_gaming` (base Fedora) existe mais n'est pas affiché dans le menu — voir la structure du projet.
+> Les environnements de développement incluent les utilitaires : `bat`, `ripgrep`, `fzf`, `jq`, `htop`, `tmux`, `tree`, `gh`, `zsh`
+
+### Profils
+
+Un environnement peut proposer des **profils** : des variantes qui ajoutent des
+paquets et des outils par-dessus l'installation de base. Le menu de `install.sh`
+les détecte automatiquement (un profil = un fichier `packages.<profil>.txt`), et
+ils sont aussi accessibles en direct :
+
+```bash
+./ubuntu_dev_python/install.sh --profile data
+```
+
+| Environnement | Profil | Ajoute |
+| --- | --- | --- |
+| `ubuntu_dev_python` | `data` | DuckDB, JupyterLab, pandas, polars, pyarrow, scikit-learn, pgcli/mycli/litecli/harlequin, venv `~/data_env` (alias `data-env`) |
 
 * * *
 
@@ -107,38 +116,33 @@ les scripts restent disponibles à la main :
 
 ```
 .
-├── install.sh            # Menu principal d'installation (14 environnements)
+├── install.sh            # Menu principal d'installation (auto-découverte des envs)
 ├── update.sh             # Mise à jour des environnements
 ├── uninstall.sh          # Suppression des environnements
+├── status.sh             # État des environnements + résumé de l'hôte
 ├── fix_locale.sh         # Corrige /etc/locale.conf en forme canonique (.UTF-8)
 ├── revert_locale.sh      # Restaure un backup de /etc/locale.conf
 ├── lib/
 │   ├── common.sh         # Fonctions partagées (hôte, SELinux, cgroups, GPU, locale, logging)
 │   ├── shell_setup.sh    # Helpers communs aux post_install (PATH, prompt, zsh)
 │   └── versions.sh       # Versions centralisées (images, NVM, Python, Go…)
-├── ubuntu_dev_hugo/      # Chaque environnement contient :
-│   ├── install.sh        #   - install.sh       (création de la box)
-│   ├── post_install.sh   #   - post_install.sh  (configuration dans la box)
-│   └── packages.txt      #   - packages.txt     (paquets apt)
-├── ubuntu_dev_python/
+├── ubuntu_dev_python/    # Chaque environnement contient :
+│   ├── install.sh        #   - install.sh          (création de la box)
+│   ├── post_install.sh   #   - post_install.sh     (configuration dans la box)
+│   ├── packages.txt      #   - packages.txt        (paquets apt)
+│   └── packages.data.txt #   - packages.<p>.txt    (paquets d'un profil, optionnel)
 ├── ubuntu_dev_ia/
 ├── ubuntu_dev_rust/
-├── ubuntu_dev_n8n/
 ├── ubuntu_dev_go/
-├── ubuntu_dev_devops/
-├── ubuntu_dev_dotnet/
-├── ubuntu_dev_writing/
-├── ubuntu_dev_data/
-├── ubuntu_dev_php/
 ├── ubuntu_dev_java/
-├── ubuntu_dev_video/
+├── ubuntu_dev_php/
+├── ubuntu_dev_dotnet/
+├── ubuntu_dev_devops/
+├── ubuntu_dev_writing/
 ├── ubuntu_dev_security_audit/
-├── ubuntu_dev_flutter/
-└── fedora_gaming/        # Environnement avancé (non affiché dans le menu)
+└── fedora_gaming/        # Environnement de jeu (base Fedora)
     ├── install.sh
-    ├── setup_repos.sh
-    ├── config_amd.sh
-    ├── install_packages.sh
+    ├── post_install.sh
     └── packages.txt
 ```
 
@@ -162,17 +166,11 @@ les scripts restent disponibles à la main :
 
 * * *
 
-### **ubuntu_dev_hugo**
-
-- **Accès réseau** : Le serveur local Hugo peut être inaccessible si certains ports sont bloqués
-- **VPN** : Peut interférer avec le hot reload
-
-* * *
-
 ### **ubuntu_dev_python**
 
 - **Temps d'installation** : pyenv compile Python depuis les sources → long sur machines modestes
 - **uv** : Complément de pyenv — `uv venv` pour créer un environnement virtuel, `uv pip install` pour installer des paquets
+- **Profil `data`** : ajoute ~1 Go (JupyterLab + stack scientifique dans `~/data_env`). Le venv est séparé du Python global de pyenv : activez-le avec `data-env` avant de lancer `jupyter lab`.
 
 * * *
 
@@ -183,24 +181,51 @@ les scripts restent disponibles à la main :
 
 * * *
 
-### **ubuntu_dev_video**
-
-- **whisper.cpp** : compilé depuis les sources au premier post-install (peut prendre plusieurs minutes), modèle `base` téléchargé (~150 Mo)
-- **Transcription** : utilisez la fonction `transcribe <fichier>` fournie
-
-* * *
-
 ### **ubuntu_dev_java**
 
 - **SDKMAN!** : gère plusieurs JDK — `sdk list java` pour les versions disponibles, `sdk install java X.Y.Z-tem` pour ajouter un Temurin
 
 * * *
 
-### **ubuntu_dev_flutter**
+### **ubuntu_dev_security_audit**
 
-- **Cibles installées** : Linux desktop + Web (Chromium). Android **n'est pas installé par défaut** — l'émulateur Android nécessite KVM et `adb` veut accéder à l'USB, ce qui complique l'exposition depuis l'hôte.
-- **Ajouter Android plus tard** : installer `commandline-tools` officiel + `sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"` + `flutter config --android-sdk ~/Android/Sdk`
-- **Premier lancement** : `flutter precache` télécharge le Dart SDK interne et les outils Linux/Web (~1 Go, fait en post-install)
+- **API GitHub** : plusieurs outils (Cosign, Gitleaks) résolvent leur dernière version via `api.github.com`, limitée à 60 requêtes/h sans authentification. Exportez `GITHUB_TOKEN` si vous relancez le post-install plusieurs fois.
+
+* * *
+
+### **fedora_gaming**
+
+L'objectif : **tout le nécessaire pour jouer tient dans la box**, l'hôte reste
+propre. Aucun paquet Wine, Steam ou mesa n'est installé sur le système hôte —
+sur une nouvelle machine, un seul script rétablit l'environnement complet.
+
+```bash
+./fedora_gaming/install.sh                        # jeux dans ~/Games
+./fedora_gaming/install.sh --games-dir /mnt/ssd/jeux
+```
+
+- **Ce qui est portable** : le conteneur est jetable, l'état ne l'est pas. Les
+  configs vivent dans `~/distrobox/fedora_gaming`, les jeux et les préfixes Wine
+  dans `$GAMES_DIR` (monté depuis l'hôte, donc il survit à une recréation de la
+  box). **Migrer = copier ces deux dossiers et relancer le script.**
+- **Préfixes Wine** : `WINEPREFIX` pointe dans `$GAMES_DIR/prefixes` et non dans
+  `~/.wine`. Changer de préfixe : `wineprefix <nom>`.
+- **Lanceurs** : Steam, Lutris, Heroic et les émulateurs sont exportés vers le
+  menu d'applications de l'hôte via `distrobox-export` — pas besoin de passer par
+  `distrobox enter` pour jouer.
+- **Aucun pré-requis bloquant** : si le bus D-Bus ou la délégation cgroups v2
+  manquent, le script prévient et continue en mode dégradé. Seul `gamemode` exige
+  systemd dans la box (donc la délégation cgroups) ; tout le reste fonctionne sans.
+- **GPU AMD / Intel** : le rendu passe par le mesa de la box, aucune contrainte de
+  version avec l'hôte.
+- **GPU NVIDIA** : nécessite `nvidia-container-toolkit` sur l'hôte, et les
+  versions du driver hôte et des libs injectées doivent correspondre. Le script
+  détecte le cas et demande confirmation avant de continuer sans.
+- **Bibliothèque Steam existante** : ne la copiez pas, montez-la —
+  `--games-dir /chemin/vers/le/disque`.
+- **Flatpak** : volontairement absent de la box (flatpak dans un conteneur ne
+  fonctionne pas). Si vous voulez Bottles, installez-le en flatpak sur l'hôte :
+  son upstream ne supporte plus d'autre format.
 
 * * *
 

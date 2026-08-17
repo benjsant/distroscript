@@ -6,7 +6,7 @@
 # shellcheck disable=SC2034
 
 UBUNTU_IMAGE="quay.io/toolbx/ubuntu-toolbox:24.04"
-FEDORA_IMAGE="quay.io/fedora/fedora-toolbox:41"
+FEDORA_IMAGE="quay.io/fedora/fedora-toolbox:43"
 NVM_VERSION="v0.40.3"
 PYTHON_VERSION="3.13.3"
 GO_VERSION="1.23.5"

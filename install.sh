@@ -57,11 +57,9 @@ else
 fi
 
 # Auto-discovery : tous les dossiers contenant un install.sh, sauf le install.sh racine.
-# fedora_gaming est exclu : il a des pré-requis lourds (systemd + D-Bus session) et
-# reste accessible directement via ./fedora_gaming/install.sh.
 mapfile -t BOXES < <(
   find "$SCRIPT_DIR" -maxdepth 2 -name install.sh -not -path "$SCRIPT_DIR/install.sh" \
-    -printf '%h\n' | xargs -n1 basename | grep -v '^fedora_gaming$' | sort
+    -printf '%h\n' | xargs -n1 basename | sort
 )
 
 if [ ${#BOXES[@]} -eq 0 ]; then

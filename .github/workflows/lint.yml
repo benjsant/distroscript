@@ -10,7 +10,7 @@ jobs:
     name: shellcheck + bash -n
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Installer shellcheck
         run: sudo apt-get update && sudo apt-get install -y shellcheck
@@ -37,7 +37,7 @@ jobs:
     name: cohérence des packages.txt
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Un packages.txt ne doit contenir que des noms de paquets et des
       # commentaires : une ligne avec un espace est presque toujours une faute

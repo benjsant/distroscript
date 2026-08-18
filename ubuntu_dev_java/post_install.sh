@@ -14,7 +14,7 @@ fi
 sudo apt-get update && sudo apt-get upgrade -y
 grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt-get install -y
 
-# SDKMAN — gestion multi-versions JDK/Maven/Gradle/Spring
+# SDKMAN : gestion multi-versions JDK/Maven/Gradle/Spring
 if [ ! -d "$HOME/.sdkman" ]; then
   echo "Installation de SDKMAN..."
   curl --retry 3 --retry-delay 2 --connect-timeout 10 -s "https://get.sdkman.io?rcupdate=false" | bash
@@ -37,7 +37,7 @@ JDK_PREV_LTS="17.0.13-tem"
 install_sdk() {
   local candidate="$1" version="$2"
   if ! sdk list "$candidate" 2>/dev/null | grep -q "$version"; then
-    echo "[$candidate] version $version inconnue de SDKMAN — j'utilise la dernière disponible."
+    echo "[$candidate] version $version inconnue de SDKMAN : j'utilise la dernière disponible."
     sdk install "$candidate" </dev/null
   else
     sdk install "$candidate" "$version" </dev/null || true
@@ -52,7 +52,7 @@ sdk install maven   </dev/null || true
 sdk install gradle  </dev/null || true
 sdk install springboot </dev/null || true
 
-# .bashrc — SDKMAN ajoute son hook automatiquement, mais on garantit
+# .bashrc : SDKMAN ajoute son hook automatiquement, mais on garantit
 if ! grep -q 'SDKMAN_DIR' ~/.bashrc; then
   cat >> ~/.bashrc << 'EOF'
 export SDKMAN_DIR="$HOME/.sdkman"

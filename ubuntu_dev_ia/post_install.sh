@@ -17,7 +17,7 @@ grep -v '^\s*#' ~/packages.txt | grep -v '^\s*$' | xargs -r sudo apt-get install
 
 setup_local_bin
 
-# 2. Ollama (install ou update — l'installeur officiel gère les deux cas)
+# 2. Ollama (install ou update : l'installeur officiel gère les deux cas)
 echo "Installation / mise à jour d'Ollama..."
 curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://ollama.com/install.sh | sh
 
@@ -70,7 +70,7 @@ pyenv global "$LATEST_PYTHON"
 #
 # uv plutôt que pip : c'est l'outil retenu partout ailleurs dans le projet, et
 # il est nettement plus rapide sur des wheels PyTorch qui pèsent plusieurs
-# centaines de Mo. Le venv isole torch du Python global de pyenv — même motif
+# centaines de Mo. Le venv isole torch du Python global de pyenv : même motif
 # que le profil "data" de ubuntu_dev_python.
 IA_VENV="$HOME/ia_env"
 if [ ! -d "$IA_VENV" ]; then
@@ -81,7 +81,7 @@ fi
 TORCH_INDEX=""
 case "$MODE" in
   nvidia)
-    nvidia-smi 2>/dev/null || echo "nvidia-smi non disponible — vérifiez les drivers sur l'hôte" >&2
+    nvidia-smi 2>/dev/null || echo "nvidia-smi non disponible : vérifiez les drivers sur l'hôte" >&2
     TORCH_INDEX="$TORCH_CUDA_INDEX"
     ;;
   rocm)
@@ -92,7 +92,7 @@ case "$MODE" in
         echo "export LD_LIBRARY_PATH=\"\${LD_LIBRARY_PATH:-}:$ROCM_MOUNT/lib\"" >> ~/.bashrc
       fi
       export PATH="$PATH:$ROCM_MOUNT/bin"
-      rocm-smi 2>/dev/null || echo "rocm-smi non disponible — vérifiez les drivers ROCm sur l'hôte" >&2
+      rocm-smi 2>/dev/null || echo "rocm-smi non disponible : vérifiez les drivers ROCm sur l'hôte" >&2
     else
       echo "Dossier ROCm non trouvé" >&2
     fi
@@ -117,7 +117,7 @@ if ! grep -q "alias ia-env=" ~/.bashrc; then
   echo "alias ia-env='source ~/ia_env/bin/activate'" >> ~/.bashrc
 fi
 
-# 8. Prompt, alias, Zsh — en dernier
+# 8. Prompt, alias, Zsh : en dernier
 setup_prompt_and_aliases
 
 setup_zsh_with_body <<'EOF'

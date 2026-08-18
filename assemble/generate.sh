@@ -1,5 +1,5 @@
 #!/bin/bash
-# PILOTE — génère un distrobox.ini pour un environnement, à partir de la
+# PILOTE : génère un distrobox.ini pour un environnement, à partir de la
 # détection d'hôte de lib/common.sh.
 #
 #   ./assemble/generate.sh ubuntu_dev_go

@@ -61,7 +61,7 @@ HAS_SYSTEMD=0
 if can_run_systemd_in_container; then
   HAS_SYSTEMD=1
 else
-  echo "⚠ Délégation cgroups v2 absente — la box sera créée sans systemd."
+  echo "⚠ Délégation cgroups v2 absente : la box sera créée sans systemd."
   echo "  Conséquence : gamemode ne pourra pas lancer son daemon (gamemoded)."
   echo "  Tout le reste (Steam, Lutris, Wine, émulateurs) fonctionne normalement."
   echo "  Pour l'activer plus tard : /etc/systemd/system/user@.service.d/delegate.conf"
@@ -76,7 +76,7 @@ if command -v lspci &>/dev/null && lspci | grep -i 'NVIDIA' >/dev/null 2>&1; the
   if ! has_nvidia_container_toolkit; then
     echo ""
     echo "⚠ GPU NVIDIA détecté mais nvidia-container-toolkit absent."
-    echo "  Sans lui, aucune accélération 3D dans la box — les jeux ne tourneront pas."
+    echo "  Sans lui, aucune accélération 3D dans la box : les jeux ne tourneront pas."
     confirm "  Continuer quand même ?" || { echo "Annulé."; exit 1; }
   fi
 fi
@@ -93,7 +93,7 @@ cp "$LIB_DIR/shell_setup.sh" "$HOME_DIR/"
 
 # Pas de suffixe :z : distrobox passe --security-opt label=disable, donc le
 # conteneur n'est pas confiné par SELinux. ":z" ne servirait à rien et
-# déclencherait un réétiquetage récursif de GAMES_DIR — potentiellement des
+# déclencherait un réétiquetage récursif de GAMES_DIR : potentiellement des
 # centaines de Go de bibliothèque Steam.
 
 EXTRA_FLAGS=(
@@ -161,7 +161,7 @@ echo "Accélération 3D :"
 distrobox enter "$BOX_NAME" -- bash -ic '
   if command -v vulkaninfo &>/dev/null; then
     vulkaninfo --summary 2>/dev/null | grep -E "deviceName|driverName" | sed "s/^\s*/  /" \
-      || echo "  [!!] Vulkan ne trouve aucun GPU — vérifiez les drivers de l\''hôte"
+      || echo "  [!!] Vulkan ne trouve aucun GPU : vérifiez les drivers de l\''hôte"
   fi
   command -v glxinfo &>/dev/null && glxinfo -B 2>/dev/null | grep -E "OpenGL renderer" | sed "s/^/  /" || true
 ' 2>/dev/null || true
@@ -173,6 +173,6 @@ echo "  Lanceurs exportés vers le menu de l'hôte (Steam, Lutris, Heroic…)."
 echo "  Sinon : distrobox enter $BOX_NAME -- steam"
 echo ""
 echo "  Migration vers une autre machine : copiez $HOME_DIR et $GAMES_DIR,"
-echo "  puis relancez ce script — la box est jetable, votre état ne l'est pas."
+echo "  puis relancez ce script : la box est jetable, votre état ne l'est pas."
 [ "$HAS_SYSTEMD" -eq 0 ] && echo "  Rappel : gamemode indisponible (pas de systemd dans la box)."
 exit 0

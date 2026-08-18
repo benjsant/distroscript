@@ -42,7 +42,7 @@ if [ "$WINE_STAGING" -eq 1 ]; then
   if sudo pacman -S --noconfirm wine-staging; then
     echo "  [ok] wine-staging $(wine --version 2>/dev/null || echo '')"
   else
-    echo "  ⚠ Échec du passage à wine-staging — le wine stable reste en place." >&2
+    echo "  ⚠ Échec du passage à wine-staging : le wine stable reste en place." >&2
   fi
 fi
 
@@ -59,7 +59,7 @@ done
 echo ""
 
 # ---------------------------------------------------------------------------
-# 3. AUR (optionnel) — paru est fourni par l'image
+# 3. AUR (optionnel) : paru est fourni par l'image
 # ---------------------------------------------------------------------------
 # Heroic et ProtonPlus ne sont pas dans les dépôts officiels. La compilation AUR
 # est longue et peut échouer : elle ne doit jamais bloquer le post-install.
@@ -73,7 +73,7 @@ if command -v paru &>/dev/null; then
     fi
   done
 else
-  echo "paru absent — Heroic et ProtonPlus non installés."
+  echo "paru absent : Heroic et ProtonPlus non installés."
 fi
 
 setup_local_bin

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Helpers de téléchargement — à sourcer dans les post_install.sh.
+# Helpers de téléchargement : à sourcer dans les post_install.sh.
 #
 # À copier dans le HOME_DIR de la box par install.sh, puis dans
 # post_install.sh : source ~/fetch.sh
@@ -14,7 +14,7 @@ CURL_OPTS=(--retry 3 --retry-delay 2 --connect-timeout 10 -fsSL)
 #
 # L'API anonyme est limitée à 60 requêtes/h et par IP. Au-delà, `jq -r .tag_name`
 # renvoie "null", l'URL construite devient .../download/null/outil.tar.gz, curl
-# échoue et `set -e` tue le post-install au milieu — laissant une box à moitié
+# échoue et `set -e` tue le post-install au milieu, laissant une box à moitié
 # configurée. Ce helper détecte le cas et retombe sur la version épinglée dans
 # versions.sh plutôt que de tout faire échouer.
 #
@@ -30,7 +30,7 @@ github_latest_tag() {
          | jq -r '.tag_name // empty' 2>/dev/null || true)"
 
   if [ -z "$tag" ] || [ "$tag" = "null" ]; then
-    echo "  API GitHub indisponible pour ${repo} — repli sur ${fallback}." >&2
+    echo "  API GitHub indisponible pour ${repo} : repli sur ${fallback}." >&2
     tag="$fallback"
   fi
   printf '%s' "$tag"
@@ -47,7 +47,7 @@ download_file() {
   curl "${CURL_OPTS[@]}" "$url" -o "$dest"
   if [ -n "$sha" ]; then
     if ! echo "${sha}  ${dest}" | sha256sum -c --status; then
-      echo "Somme SHA-256 invalide pour ${url} — fichier supprimé." >&2
+      echo "Somme SHA-256 invalide pour ${url} : fichier supprimé." >&2
       rm -f "$dest"
       return 1
     fi

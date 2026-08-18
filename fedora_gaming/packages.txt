@@ -1,4 +1,4 @@
-# fedora_gaming — tout le nécessaire pour JOUER, dans la box.
+# fedora_gaming : tout le nécessaire pour JOUER, dans la box.
 # L'hôte reste propre : aucun paquet wine/steam/mesa n'y est installé.
 #
 # Disponibilité de chaque paquet vérifiée dans une fedora-toolbox:43 réelle,

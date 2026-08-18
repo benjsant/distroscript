@@ -55,7 +55,7 @@ detect_nvidia  # ajoute /dev/dri + --nvidia si toolkit présent
 if [ "$MODE" = "rocm" ] && [ -n "$ROCM_PATH" ]; then
   EXTRA_FLAGS="$EXTRA_FLAGS --volume=${ROCM_PATH}:${ROCM_PATH}"
 elif [ "$MODE" = "nvidia" ] && ! has_nvidia_container_toolkit; then
-  echo "Mode nvidia demandé mais nvidia-container-toolkit absent — CUDA ne fonctionnera pas dans la box." >&2
+  echo "Mode nvidia demandé mais nvidia-container-toolkit absent : CUDA ne fonctionnera pas dans la box." >&2
 fi
 
 # systemd dans le conteneur uniquement si la délégation cgroups est disponible
@@ -63,7 +63,7 @@ INIT_FLAGS=()
 if can_run_systemd_in_container; then
   INIT_FLAGS=(--init --additional-packages "systemd")
 else
-  echo "Délégation cgroups v2 absente — création sans --init (systemd-in-container indisponible)." >&2
+  echo "Délégation cgroups v2 absente : création sans --init (systemd-in-container indisponible)." >&2
 fi
 
 echo "Création de la distrobox '$BOX_NAME'..."

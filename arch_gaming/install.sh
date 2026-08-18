@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# arch_gaming — box de jeu bâtie sur ghcr.io/ublue-os/steambox, l'image OCI
+# arch_gaming : box de jeu bâtie sur ghcr.io/ublue-os/steambox, l'image OCI
 # gaming maintenue par Universal Blue (successeur de bazzite-arch, archivé en
 # mars 2026). Alternative à fedora_gaming : on délègue à des gens dont c'est le
 # métier la partie la plus pénible (lib32, audio, couches Vulkan, mesa), et le
@@ -45,7 +45,7 @@ print_host_summary
 echo "Image  : $STEAMBOX_IMAGE"
 echo "Jeux   : $GAMES_DIR"
 echo ""
-echo "⚠ L'image pèse environ 11 Go — le premier téléchargement est long."
+echo "⚠ L'image pèse environ 11 Go : le premier téléchargement est long."
 echo "  En contrepartie, la box est prête sans compiler ni résoudre de dépendances."
 echo ""
 
@@ -68,7 +68,7 @@ HAS_SYSTEMD=0
 if can_run_systemd_in_container; then
   HAS_SYSTEMD=1
 else
-  echo "⚠ Délégation cgroups v2 absente — box créée sans systemd."
+  echo "⚠ Délégation cgroups v2 absente : box créée sans systemd."
   echo "  Conséquence : gamemode ne pourra pas lancer son daemon (gamemoded)."
   echo "  Tout le reste (Steam, Lutris, Wine, émulateurs) fonctionne normalement."
 fi
@@ -129,7 +129,7 @@ if [ "$HAS_SYSTEMD" -eq 1 ]; then
 fi
 
 # --unshare-netns : recommandé en amont pour cette image. Indispensable si Steam
-# tourne AUSSI sur l'hôte — deux Steam dans le même namespace réseau se
+# tourne AUSSI sur l'hôte : deux Steam dans le même namespace réseau se
 # disputent les mêmes ports.
 NETNS_FLAGS=(--unshare-netns)
 

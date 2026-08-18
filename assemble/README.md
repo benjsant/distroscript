@@ -50,11 +50,11 @@ Le manifeste est **statique**, et c'est la limite structurante : il ne peut pas
 faire de détection d'hôte, poser une question, ni logguer.
 
 Un `distrobox.ini` écrit à la main et versionné serait **faux dès qu'on change
-de machine** — le GID du groupe `render` diffère, SELinux peut être absent
+de machine** : le GID du groupe `render` diffère, SELinux peut être absent
 (donc pas de suffixe `:z`), le toolkit NVIDIA peut manquer. Or c'est
 exactement ce que `lib/common.sh` sait faire.
 
-D'où l'architecture retenue pour ce pilote — bash *puis* assemble, chacun sur
+D'où l'architecture retenue pour ce pilote : bash *puis* assemble, chacun sur
 son terrain :
 
 ```
@@ -120,11 +120,11 @@ non par `additional_packages` : voir la réserve plus haut sur
 **Limite connue** : `distrobox assemble` joint `additional_flags` par des
 espaces et enveloppe `init_hooks` dans des simples quotes, sans échappement. Un
 `--games-dir` contenant un espace ou une apostrophe produirait un manifeste
-cassé en silence — `generate.sh` refuse donc explicitement ces chemins.
+cassé en silence : `generate.sh` refuse donc explicitement ces chemins.
 
 ## Observation du pilote
 
-Le dry-run sur `ubuntu_dev_go` montre les paquets communs **en double** —
+Le dry-run sur `ubuntu_dev_go` montre les paquets communs **en double** :
 `[base_ubuntu]` les déclare, et `ubuntu_dev_go/packages.txt` les contient
 encore. `apt` s'en accommode, mais c'est le signe de ce que la migration doit
 faire : réduire chaque `packages.txt` à son delta.

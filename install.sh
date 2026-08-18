@@ -127,7 +127,7 @@ install_vscode_host() {
   command -v code &>/dev/null && { echo "VS Code déjà présent sur l'hôte."; return 0; }
 
   if assume_yes; then
-    echo "VS Code absent de l'hôte — ignoré (mode non interactif)."
+    echo "VS Code absent de l'hôte : ignoré (mode non interactif)."
     return 0
   fi
   confirm "VS Code n'est pas installé sur l'hôte. Voulez-vous l'installer ?" || return 0

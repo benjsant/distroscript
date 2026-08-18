@@ -72,7 +72,7 @@ ensure_canonical_locale_available() {
     echo "✓ Locale canonique '$canonical' utilisable."
     return 0
   fi
-  echo "⚠ Locale canonique '$canonical' non utilisable — installation requise."
+  echo "⚠ Locale canonique '$canonical' non utilisable : installation requise."
   if command -v dnf &>/dev/null; then
     local lang_short
     lang_short="$(printf '%s\n' "$canonical" | cut -d_ -f1 | tr '[:upper:]' '[:lower:]')"
@@ -86,7 +86,7 @@ ensure_canonical_locale_available() {
     fi
     sudo locale-gen
   else
-    echo "Gestionnaire de paquets non reconnu — installe manuellement la locale '$canonical'." >&2
+    echo "Gestionnaire de paquets non reconnu : installe manuellement la locale '$canonical'." >&2
     return 1
   fi
   if ! is_canonical_locale_available "$canonical"; then
@@ -97,7 +97,7 @@ ensure_canonical_locale_available() {
 
 apply_fix() {
   if [ ! -r "$LOCALE_FILE" ]; then
-    echo "$LOCALE_FILE introuvable — rien à faire." >&2
+    echo "$LOCALE_FILE introuvable : rien à faire." >&2
     exit 1
   fi
 

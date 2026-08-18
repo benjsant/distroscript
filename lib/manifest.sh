@@ -1,9 +1,9 @@
 #!/bin/bash
-# Génération de manifestes distrobox-assemble (PILOTE — voir assemble/README.md)
+# Génération de manifestes distrobox-assemble (PILOTE : voir assemble/README.md)
 #
 # Principe : `distrobox assemble` est déclaratif, donc statique. Il ne sait rien
 # faire de la détection d'hôte (GID render, délégation cgroups, présence du bus
-# D-Bus, toolkit NVIDIA) — or c'est exactement ce que lib/common.sh apporte.
+# D-Bus, toolkit NVIDIA), or c'est exactement ce que lib/common.sh apporte.
 #
 # On garde donc chacun sur son terrain :
 #
@@ -85,8 +85,8 @@ manifest_entry_ubuntu() {
 # ---------------------------------------------------------------------------
 # Environnements de jeu (fedora_gaming, arch_gaming)
 # ---------------------------------------------------------------------------
-# Ce sont les box aux flags les plus complexes — périphériques, GID de groupes,
-# socket audio, bus D-Bus, systemd conditionnel — donc celles où un manifeste
+# Ce sont les box aux flags les plus complexes : périphériques, GID de groupes,
+# socket audio, bus D-Bus, systemd conditionnel. Ce sont donc celles où un manifeste
 # généré apporte le plus, et celles qu'il serait le plus faux d'écrire à la main.
 manifest_entry_gaming() {
   local name="$1" home_dir="$2" pkg_file="$3" hook="$4" image="$5" games_dir="$6"

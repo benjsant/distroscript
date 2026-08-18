@@ -33,7 +33,7 @@ if ! command -v trivy &>/dev/null; then
   sudo apt-get install -y trivy
 fi
 
-# Syft (Anchore) — installer script officiel
+# Syft (Anchore) : installer script officiel
 if ! command -v syft &>/dev/null; then
   echo "Installation de Syft..."
   curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://raw.githubusercontent.com/anchore/syft/main/install.sh \

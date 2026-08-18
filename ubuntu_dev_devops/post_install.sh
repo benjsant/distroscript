@@ -64,7 +64,7 @@ if ! command -v kind &>/dev/null; then
   download_bin "https://kind.sigs.k8s.io/dl/${KIND_VER}/kind-linux-amd64" "$LOCAL_BIN/kind"
 fi
 
-# CLI cloud — profil "cloud" uniquement.
+# CLI cloud : profil "cloud" uniquement.
 # aws + gcloud + az pèsent ~1,5 Go ensemble, pour un usage presque toujours
 # mono-cloud. Le coeur Kubernetes (kubectl/helm/k9s/kustomize/kind) et Terraform
 # restent installés par défaut.

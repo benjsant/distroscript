@@ -13,7 +13,7 @@ mapfile -t BOXES < <(
 )
 
 echo ""
-echo "DistroScript — état des environnements"
+echo "DistroScript : état des environnements"
 echo "---------------------------------------"
 echo ""
 

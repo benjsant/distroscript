@@ -38,7 +38,7 @@ _ZSHRC_END='# <<< DistroScript <<<'
 # La section gérée est délimitée par des marqueurs et réécrite à chaque appel :
 # relancer un post_install met donc la configuration à jour. L'ancienne version
 # sortait si ~/.zshrc existait déjà, si bien qu'aucune modification n'était
-# jamais reprise — un changement de body était silencieusement perdu.
+# jamais reprise : un changement de body était silencieusement perdu.
 #
 # Usage :
 #   setup_zsh_with_body <<'EOF'

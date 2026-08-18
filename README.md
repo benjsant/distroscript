@@ -12,7 +12,7 @@ Chaque environnement est préinstallé avec les outils nécessaires à un usage 
 - Création automatisée de **Distrobox** dédiées selon le besoin
 - Scripts de **post-installation** pour configurer chaque environnement
 - **Détection de l'hôte** (distro, moteur de conteneur, SELinux, cgroups, GPU) pour adapter les options
-- **Détection GPU NVIDIA/ROCm** automatique — support activé si les pré-requis sont présents sur l'hôte
+- **Détection GPU NVIDIA/ROCm** automatique : support activé si les pré-requis sont présents sur l'hôte
 - **Détection et correction du bug de locale** (`fr_FR.utf8` non canonique) qui casse `distrobox-init` sur les images Ubuntu
 - **Logs** d'installation sauvegardés dans `~/distrobox/<nom>_install.log`
 - **Vérification post-install** des outils clés
@@ -26,14 +26,14 @@ Chaque environnement est préinstallé avec les outils nécessaires à un usage 
 
 | # | Nom | Base | Outils principaux |
 | --- | --- | --- | --- |
-| 1 | `ubuntu_dev_python` | Ubuntu 24.04 | pyenv, uv, Node (NVM), VS Code, gh — profil `data` optionnel |
-| 2 | `ubuntu_dev_ia` | Ubuntu 24.04 | Ollama, pyenv, uv, PyTorch — GPU NVIDIA/ROCm/CPU |
+| 1 | `ubuntu_dev_python` | Ubuntu 24.04 | pyenv, uv, Node (NVM), VS Code, gh (profil `data` optionnel) |
+| 2 | `ubuntu_dev_ia` | Ubuntu 24.04 | Ollama, pyenv, uv, PyTorch : GPU NVIDIA/ROCm/CPU |
 | 3 | `ubuntu_dev_rust` | Ubuntu 24.04 | rustup, cargo, clippy, rustfmt, mold |
 | 4 | `ubuntu_dev_go` | Ubuntu 24.04 | Go SDK, gopls, delve, air, staticcheck |
 | 5 | `ubuntu_dev_java` | Ubuntu 24.04 | SDKMAN!, Temurin JDK 21/17 LTS, Maven, Gradle, Spring Boot CLI |
 | 6 | `ubuntu_dev_php` | Ubuntu 24.04 | PHP 8, Composer, Symfony CLI, Laravel, xdebug, Node (NVM) |
 | 7 | `ubuntu_dev_dotnet` | Ubuntu 24.04 | .NET SDK 8 LTS, PowerShell, Azure CLI |
-| 8 | `ubuntu_dev_devops` | Ubuntu 24.04 | kubectl, helm, terraform, ansible, k9s, kustomize, kind — profil `cloud` optionnel |
+| 8 | `ubuntu_dev_devops` | Ubuntu 24.04 | kubectl, helm, terraform, ansible, k9s, kustomize, kind (profil `cloud` optionnel) |
 | 9 | `ubuntu_dev_writing` | Ubuntu 24.04 | LaTeX (FR/EN), Pandoc (+ Eisvogel), Marp, Vale |
 | 10 | `ubuntu_dev_security_audit` | Ubuntu 24.04 | Trivy, Syft, Grype, Semgrep, Cosign, Gitleaks, TruffleHog, Checkov |
 | 11 | `fedora_gaming` | Fedora 44 | Steam, Lutris, Heroic, Wine, umu, Proton, MangoHud, gamescope, émulateurs |
@@ -45,8 +45,7 @@ Chaque environnement est préinstallé avec les outils nécessaires à un usage 
 
 Un environnement peut proposer des **profils** : des variantes qui ajoutent des
 paquets et des outils par-dessus l'installation de base. Le menu de `install.sh`
-les détecte automatiquement (un profil = un fichier `packages.<profil>.txt`), et
-ils sont aussi accessibles en direct :
+les détecte automatiquement, et ils sont aussi accessibles en direct :
 
 ```bash
 ./ubuntu_dev_python/install.sh --profile data
@@ -110,7 +109,7 @@ testables en CI :
 | `--list` | Liste les environnements, une par ligne |
 
 `--yes` ne détruit **jamais** une box existante : sans `--recreate`, le script
-s'arrête avec un message explicite. La distinction est volontaire — une
+s'arrête avec un message explicite. La distinction est volontaire : une
 automatisation ne doit pas supprimer un environnement par inadvertance.
 
 `--yes` n'installe pas non plus VS Code sur l'hôte : modifier le système hôte
@@ -213,7 +212,7 @@ les scripts restent disponibles à la main :
 ### **ubuntu_dev_python**
 
 - **Temps d'installation** : pyenv compile Python depuis les sources → long sur machines modestes
-- **uv** : Complément de pyenv — `uv venv` pour créer un environnement virtuel, `uv pip install` pour installer des paquets
+- **uv** : Complément de pyenv, `uv venv` pour créer un environnement virtuel, `uv pip install` pour installer des paquets
 - **Profil `data`** : ajoute ~1 Go (JupyterLab + stack scientifique dans `~/data_env`). Le venv est séparé du Python global de pyenv : activez-le avec `data-env` avant de lancer `jupyter lab`.
 
 * * *
@@ -221,14 +220,14 @@ les scripts restent disponibles à la main :
 ### **ubuntu_dev_devops / ubuntu_dev_writing**
 
 - **Taille** : Writing installe TeXLive (~3 Go)
-- **DevOps** : `kubectl`/`helm`/`kind` agissent sur des clusters externes — pensez à monter votre `~/.kube/config` si besoin
+- **DevOps** : `kubectl`/`helm`/`kind` agissent sur des clusters externes, pensez à monter votre `~/.kube/config` si besoin
 - **CLI cloud** : `aws`, `gcloud` et `az` ne sont **plus installées par défaut**. Elles pèsent ~1,5 Go ensemble pour un usage presque toujours mono-cloud. Pour les ajouter : `./install.sh ubuntu_dev_devops --profile cloud`
 
 * * *
 
 ### **ubuntu_dev_java**
 
-- **SDKMAN!** : gère plusieurs JDK — `sdk list java` pour les versions disponibles, `sdk install java X.Y.Z-tem` pour ajouter un Temurin
+- **SDKMAN!** : gère plusieurs JDK, `sdk list java` pour les versions disponibles, `sdk install java X.Y.Z-tem` pour ajouter un Temurin
 
 * * *
 
@@ -241,7 +240,7 @@ les scripts restent disponibles à la main :
 ### **fedora_gaming**
 
 L'objectif : **tout le nécessaire pour jouer tient dans la box**, l'hôte reste
-propre. Aucun paquet Wine, Steam ou mesa n'est installé sur le système hôte —
+propre. Aucun paquet Wine, Steam ou mesa n'est installé sur le système hôte :
 sur une nouvelle machine, un seul script rétablit l'environnement complet.
 
 ```bash
@@ -256,7 +255,7 @@ sur une nouvelle machine, un seul script rétablit l'environnement complet.
 - **Préfixes Wine** : `WINEPREFIX` pointe dans `$GAMES_DIR/prefixes` et non dans
   `~/.wine`. Changer de préfixe : `wineprefix <nom>`.
 - **Lanceurs** : Steam, Lutris, Heroic et les émulateurs sont exportés vers le
-  menu d'applications de l'hôte via `distrobox-export` — pas besoin de passer par
+  menu d'applications de l'hôte via `distrobox-export` : pas besoin de passer par
   `distrobox enter` pour jouer.
 - **Aucun pré-requis bloquant** : si le bus D-Bus ou la délégation cgroups v2
   manquent, le script prévient et continue en mode dégradé. Seul `gamemode` exige
@@ -266,13 +265,13 @@ sur une nouvelle machine, un seul script rétablit l'environnement complet.
 - **GPU NVIDIA** : nécessite `nvidia-container-toolkit` sur l'hôte, et les
   versions du driver hôte et des libs injectées doivent correspondre. Le script
   détecte le cas et demande confirmation avant de continuer sans.
-- **Bibliothèque Steam existante** : ne la copiez pas, montez-la —
+- **Bibliothèque Steam existante** : ne la copiez pas, montez-la avec
   `--games-dir /chemin/vers/le/disque`.
-- **Flatpak** : volontairement absent de la box — flatpak dans un conteneur ne
+- **Flatpak** : volontairement absent de la box, flatpak dans un conteneur ne
   fonctionne pas.
 - **Paquets vérifiés** : la disponibilité de chaque entrée de `packages.txt` a
   été contrôlée dans une `fedora-toolbox:44` réelle avec RPM Fusion et Terra.
-  N'ajoutez pas de paquet sans le vérifier — les noms diffèrent entre Fedora,
+  N'ajoutez pas de paquet sans le vérifier : les noms diffèrent entre Fedora,
   Nobara et Arch (`heroic-games-launcher` sur Fedora contre
   `heroic-games-launcher-bin` sur l'AUR, par exemple).
 - **Dépôt Terra** : fournit `umu-launcher`, `heroic-games-launcher` et
@@ -284,7 +283,7 @@ sur une nouvelle machine, un seul script rétablit l'environnement complet.
   aucun paquet Fedora ou RPM Fusion. Sa clé est importée explicitement et
   `repo_gpgcheck=1` vérifie aussi la signature des métadonnées.
 - **wine-staging** : Fedora ne fournit que wine stable. Pour staging, ajoutez le
-  [dépôt WineHQ](https://gitlab.winehq.org/wine/wine/-/wikis/Download) — ou
+  [dépôt WineHQ](https://gitlab.winehq.org/wine/wine/-/wikis/Download), ou
   utilisez `arch_gaming`, où staging est dans les dépôts officiels.
 
 * * *
@@ -307,13 +306,13 @@ gaming maintenue par [Universal Blue](https://github.com/ublue-os/toolboxes)
   LatencyFleX et obs-vkcapture. C'est la partie la plus pénible à assembler
   soi-même, et elle est déléguée à des mainteneurs dont c'est le métier.
 - **Ce que le post-install ajoute** : `umu-launcher`, `wine-staging`,
-  `gamescope`, `gamemode` (+ lib32), `goverlay`, `antimicrox`, les émulateurs —
+  `gamescope`, `gamemode` (+ lib32), `goverlay`, `antimicrox`, les émulateurs :
   tous présents dans les dépôts Arch officiels. Heroic et ProtonPlus viennent
   de l'AUR via `paru`, et leur échec n'est pas bloquant.
 - **Taille** : l'image pèse **~11 Go**. C'est le prix à payer, en échange d'une
   box prête sans compilation ni résolution de dépendances.
 - **`--unshare-netns`** : recommandé en amont, et indispensable si Steam tourne
-  aussi sur l'hôte — deux Steam dans le même namespace réseau se disputent les
+  aussi sur l'hôte : deux Steam dans le même namespace réseau se disputent les
   mêmes ports.
 - **Arch et la stabilité** : le conteneur est jetable et l'image est construite
   et testée en amont ; une régression Arch ne touche pas l'hôte, et l'image peut

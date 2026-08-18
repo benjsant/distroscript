@@ -14,7 +14,7 @@ fi
 sudo apt-get update && sudo apt-get upgrade -y
 grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt-get install -y
 
-# Go SDK — tarball officiel installé sous ~/.local/go (pas /usr/local pour éviter sudo)
+# Go SDK : tarball officiel installé sous ~/.local/go (pas /usr/local pour éviter sudo)
 GO_ROOT="$HOME/.local/go"
 GO_PATH="$HOME/go"
 GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz"

@@ -1,4 +1,4 @@
-# arch_gaming — complément à l'image ghcr.io/ublue-os/steambox.
+# arch_gaming : complément à l'image ghcr.io/ublue-os/steambox.
 #
 # L'image fournit DÉJÀ (vérifié par inspection) : steam, lutris, wine 11.11,
 # mangohud + lib32-mangohud, vkbasalt + lib32-vkbasalt, protontricks, winetricks,
@@ -6,7 +6,7 @@
 # les vulkan-mesa-layers 32 bits, le runtime ROCm, LatencyFleX et obs-vkcapture.
 #
 # Ce fichier ne liste donc QUE le manquant. Tous ces paquets ont été vérifiés
-# présents dans les dépôts Arch officiels (extra / multilib) — aucun AUR requis.
+# présents dans les dépôts Arch officiels (extra / multilib) : aucun AUR requis.
 
 # --- Proton hors Steam --------------------------------------------------
 # Pièce centrale du lancement de jeux Windows hors Steam : Lutris et Heroic

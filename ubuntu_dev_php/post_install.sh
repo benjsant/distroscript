@@ -16,7 +16,7 @@ grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt-get instal
 
 setup_local_bin
 
-# Composer (installer officiel — vérifie le hash)
+# Composer (installer officiel : vérifie le hash)
 if ! command -v composer &>/dev/null; then
   echo "Installation de Composer..."
   EXPECTED_HASH="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://composer.github.io/installer.sig)"
@@ -24,7 +24,7 @@ if ! command -v composer &>/dev/null; then
   curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://getcomposer.org/installer -o "$tmp_php"
   ACTUAL_HASH="$(php -r "echo hash_file('sha384', '$tmp_php');")"
   if [ "$EXPECTED_HASH" != "$ACTUAL_HASH" ]; then
-    echo "Hash Composer invalide — abandon." >&2
+    echo "Hash Composer invalide : abandon." >&2
     rm -f "$tmp_php"
     exit 1
   fi

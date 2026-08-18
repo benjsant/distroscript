@@ -24,7 +24,7 @@ sudo dnf install -y \
   "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_REL}.noarch.rpm"
 
 # Terra (Fyra Labs) : umu-launcher, heroic-games-launcher, protonplus.
-# Préféré aux COPR personnels — c'est un dépôt maintenu conçu pour s'ajouter à
+# Préféré aux COPR personnels : c'est un dépôt maintenu conçu pour s'ajouter à
 # une Fedora standard, là où les COPR gaming répandus (gloriouseggroll) sont des
 # overlays de distro complets, déconseillés hors Nobara.
 echo "Activation de Terra..."
@@ -37,7 +37,7 @@ sudo rpm --import "https://repos.fyralabs.com/terra${FEDORA_REL}/key.asc"
 
 # includepkgs : Terra ne peut fournir QUE ces trois paquets et ne peut donc pas
 # masquer une version Fedora ou RPM Fusion de quoi que ce soit d'autre. Nobara
-# maintient à l'inverse une longue liste exclude= — la liste blanche est plus
+# maintient à l'inverse une longue liste exclude= : la liste blanche est plus
 # sûre, car elle n'a pas besoin d'être tenue à jour.
 sudo tee /etc/yum.repos.d/terra.repo >/dev/null <<'EOF'
 [terra]

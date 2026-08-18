@@ -56,7 +56,7 @@ locale_conf_is_non_canonical() {
 }
 
 # À appeler dans les install.sh des boxes Ubuntu : détecte un locale.conf hôte
-# non canonique et propose de lancer fix_locale.sh tout de suite — sinon la
+# non canonique et propose de lancer fix_locale.sh tout de suite, sinon la
 # première entrée dans la box plantera avec "Installing basic packages... Error".
 # Le helper ne fait RIEN si tout est propre.
 check_locale_for_ubuntu_box() {
@@ -82,7 +82,7 @@ check_locale_for_ubuntu_box() {
   fi
 
   if ! confirm "Lancer fix_locale.sh maintenant ?" oui; then
-    echo "⚠ Tu continues sans appliquer le fix — la création de la box risque d'échouer."
+    echo "⚠ Tu continues sans appliquer le fix : la création de la box risque d'échouer."
     return 0
   fi
 
@@ -116,7 +116,7 @@ check_or_recreate_box() {
 
   # Destruction : jamais implicite. --yes ne suffit pas, il faut --recreate.
   if allow_recreate; then
-    echo "La distrobox '$box_name' existe déjà — suppression (--recreate)."
+    echo "La distrobox '$box_name' existe déjà : suppression (--recreate)."
   elif assume_yes; then
     echo "La distrobox '$box_name' existe déjà." >&2
     echo "Relancez avec --recreate pour la supprimer et la recréer." >&2
@@ -179,7 +179,7 @@ is_selinux_enforced() {
 }
 
 # Détecte le module de sécurité (LSM) réellement actif sur l'hôte.
-# Nobara, par exemple, utilise AppArmor et n'a pas SELinux du tout — dire
+# Nobara, par exemple, utilise AppArmor et n'a pas SELinux du tout : dire
 # seulement "SELinux : inactif" est exact mais trompeur.
 detect_lsm() {
   local lsms=""
@@ -191,7 +191,7 @@ detect_lsm() {
   esac
 }
 
-# Suffixe SELinux pour les --volume — ":z" si SELinux actif, vide sinon.
+# Suffixe SELinux pour les --volume. Renvoie ":z" si SELinux est actif, vide sinon.
 #
 # ATTENTION : ne PAS utiliser pour les volumes des boxes distrobox.
 # distrobox-create passe --security-opt label=disable de façon inconditionnelle,
@@ -263,10 +263,10 @@ detect_nvidia() {
 
   if command -v lspci &>/dev/null && lspci | grep -i 'NVIDIA' >/dev/null 2>&1; then
     if has_nvidia_container_toolkit; then
-      echo "GPU NVIDIA détecté + nvidia-container-toolkit présent — activation du support NVIDIA."
+      echo "GPU NVIDIA détecté + nvidia-container-toolkit présent : activation du support NVIDIA."
       EXTRA_FLAGS="$EXTRA_FLAGS --nvidia"
     else
-      echo "GPU NVIDIA détecté mais nvidia-container-toolkit absent — flag --nvidia désactivé." >&2
+      echo "GPU NVIDIA détecté mais nvidia-container-toolkit absent : flag --nvidia désactivé." >&2
       echo "  Installez-le pour activer CUDA dans la box :" >&2
       echo "    Fedora/Nobara: sudo dnf install -y nvidia-container-toolkit" >&2
       echo "    Debian/Mint  : voir https://docs.nvidia.com/datacenter/cloud-native/" >&2

@@ -1,4 +1,4 @@
-# SDKMAN gère lui-même les JDK/Maven/Gradle — on n'installe RIEN via apt côté Java
+# SDKMAN gère lui-même les JDK/Maven/Gradle : on n'installe RIEN via apt côté Java
 # pour éviter les conflits PATH.
 
 # Outils de base requis par SDKMAN et le build natif

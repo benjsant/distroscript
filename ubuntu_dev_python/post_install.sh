@@ -79,7 +79,7 @@ if ! command -v node &>/dev/null; then
   nvm install --lts
 fi
 
-# 6. Profil data — DuckDB, CLIs SQL, venv d'analyse
+# 6. Profil data : DuckDB, CLIs SQL, venv d'analyse
 if [ "$PROFILE" = "data" ]; then
   export PATH="$LOCAL_BIN:$PATH"
 
@@ -89,7 +89,7 @@ if [ "$PROFILE" = "data" ]; then
     DUCK_VER="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL \
       https://api.github.com/repos/duckdb/duckdb/releases/latest | jq -r '.tag_name // empty')"
     if [ -z "$DUCK_VER" ]; then
-      echo "  Impossible de résoudre la dernière version de DuckDB (limite API GitHub ?) — étape ignorée." >&2
+      echo "  Impossible de résoudre la dernière version de DuckDB (limite API GitHub ?) : étape ignorée." >&2
     else
       tmp_zip="$(mktemp --suffix=.zip)"
       curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL \
@@ -140,7 +140,7 @@ if [ "$PROFILE" = "data" ]; then
   fi
 fi
 
-# 7. Prompt, alias et Zsh — en dernier
+# 7. Prompt, alias et Zsh : en dernier
 setup_prompt_and_aliases
 
 {

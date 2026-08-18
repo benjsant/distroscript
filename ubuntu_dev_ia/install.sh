@@ -86,6 +86,7 @@ distrobox enter "$BOX_NAME" -- bash -ic "
   \$HOME/.pyenv/shims/python3 -c 'import torch; print(\"  [ok] PyTorch\", torch.__version__)' 2>/dev/null \
     || echo '  [!!] PyTorch manquant'
   [ -f \$HOME/.local/bin/uv ]           && echo '  [ok] uv'       || echo '  [!!] uv manquant'
+  [ -d \$HOME/ia_env ]                  && echo '  [ok] venv ia_env' || echo '  [!!] venv ia_env manquant'
   command -v gh &>/dev/null             && echo '  [ok] gh'       || echo '  [!!] gh manquant'
 " 2>/dev/null || true
 

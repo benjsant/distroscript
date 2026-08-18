@@ -50,8 +50,15 @@ export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)" 2>/dev/null || true
 
-# 6. Installation de Python via pyenv (dernière 3.9-3.13 dispo)
-LATEST_PYTHON=$(pyenv install --list | grep -E '^\s*3\.(9|10|11|12|13)\.[0-9]+$' | tail -1 | tr -d ' ') || true
+# 6. Installation de Python via pyenv
+# Le plafond de version vient de PyTorch, qui ne publie pas de wheels pour les
+# toutes dernières versions de Python : installer 3.14 ici donnerait un torch
+# compilé depuis les sources, ou pas de torch du tout. D'où un pin distinct de
+# PYTHON_VERSION, centralisé dans versions.sh.
+PY_MINORS="$(seq 9 "${IA_PYTHON_MAX_MINOR}" | paste -sd'|')"
+LATEST_PYTHON=$(pyenv install --list \
+  | grep -E "^[[:space:]]*3\.(${PY_MINORS})\.[0-9]+$" \
+  | tail -1 | tr -d ' ') || true
 if [ -z "$LATEST_PYTHON" ]; then
   echo "Impossible de déterminer la version Python à installer." >&2
   exit 1
@@ -59,12 +66,23 @@ fi
 pyenv install -s "$LATEST_PYTHON"
 pyenv global "$LATEST_PYTHON"
 
-# 7. PyTorch selon le mode GPU
+# 7. Venv d'expérimentation + PyTorch selon le mode GPU
+#
+# uv plutôt que pip : c'est l'outil retenu partout ailleurs dans le projet, et
+# il est nettement plus rapide sur des wheels PyTorch qui pèsent plusieurs
+# centaines de Mo. Le venv isole torch du Python global de pyenv — même motif
+# que le profil "data" de ubuntu_dev_python.
+IA_VENV="$HOME/ia_env"
+if [ ! -d "$IA_VENV" ]; then
+  echo "Création du venv $IA_VENV..."
+  uv venv "$IA_VENV" --python "$LATEST_PYTHON"
+fi
+
+TORCH_INDEX=""
 case "$MODE" in
   nvidia)
     nvidia-smi 2>/dev/null || echo "nvidia-smi non disponible — vérifiez les drivers sur l'hôte" >&2
-    pip install torch torchvision torchaudio --index-url "$TORCH_CUDA_INDEX"
-    python3 -c "import torch; print('PyTorch', torch.__version__, '| CUDA:', torch.cuda.is_available())" || true
+    TORCH_INDEX="$TORCH_CUDA_INDEX"
     ;;
   rocm)
     ROCM_MOUNT=$(find /opt /usr/lib64 /usr/lib -maxdepth 1 -type d -name "rocm*" 2>/dev/null | sort | tail -1)
@@ -78,17 +96,26 @@ case "$MODE" in
     else
       echo "Dossier ROCm non trouvé" >&2
     fi
-    pip install torch torchvision torchaudio --index-url "$TORCH_ROCM_INDEX"
-    python3 -c "import torch; print('PyTorch', torch.__version__)" || true
+    TORCH_INDEX="$TORCH_ROCM_INDEX"
     ;;
   cpu)
-    pip install torch torchvision torchaudio --index-url "$TORCH_CPU_INDEX"
-    python3 -c "import torch; print('PyTorch', torch.__version__, '| CPU only')" || true
+    TORCH_INDEX="$TORCH_CPU_INDEX"
     ;;
   *)
     echo "Mode GPU inconnu : $MODE" >&2
     ;;
 esac
+
+if [ -n "$TORCH_INDEX" ]; then
+  uv pip install --python "$IA_VENV/bin/python" \
+    torch torchvision torchaudio --index-url "$TORCH_INDEX"
+  "$IA_VENV/bin/python" -c \
+    "import torch; print('PyTorch', torch.__version__, '| CUDA:', torch.cuda.is_available())" || true
+fi
+
+if ! grep -q "alias ia-env=" ~/.bashrc; then
+  echo "alias ia-env='source ~/ia_env/bin/activate'" >> ~/.bashrc
+fi
 
 # 8. Prompt, alias, Zsh — en dernier
 setup_prompt_and_aliases
@@ -97,6 +124,8 @@ setup_zsh_with_body <<'EOF'
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$HOME/.local/bin:$PATH"
 eval "$(pyenv init -)" 2>/dev/null || true
+alias ia-env='source ~/ia_env/bin/activate'
 EOF
 
 echo "Installation terminée. Python: $LATEST_PYTHON | PyTorch: mode $MODE"
+echo "Activer le venv PyTorch : ia-env  (ou source ~/ia_env/bin/activate)"

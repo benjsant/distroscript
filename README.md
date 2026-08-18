@@ -33,7 +33,7 @@ Chaque environnement est préinstallé avec les outils nécessaires à un usage 
 | 5 | `ubuntu_dev_java` | Ubuntu 24.04 | SDKMAN!, Temurin JDK 21/17 LTS, Maven, Gradle, Spring Boot CLI |
 | 6 | `ubuntu_dev_php` | Ubuntu 24.04 | PHP 8, Composer, Symfony CLI, Laravel, xdebug, Node (NVM) |
 | 7 | `ubuntu_dev_dotnet` | Ubuntu 24.04 | .NET SDK 8 LTS, PowerShell, Azure CLI |
-| 8 | `ubuntu_dev_devops` | Ubuntu 24.04 | kubectl, helm, terraform, ansible, awscli, gcloud, az, k9s, kustomize, kind |
+| 8 | `ubuntu_dev_devops` | Ubuntu 24.04 | kubectl, helm, terraform, ansible, k9s, kustomize, kind — profil `cloud` optionnel |
 | 9 | `ubuntu_dev_writing` | Ubuntu 24.04 | LaTeX (FR/EN), Pandoc (+ Eisvogel), Marp, Vale |
 | 10 | `ubuntu_dev_security_audit` | Ubuntu 24.04 | Trivy, Syft, Grype, Semgrep, Cosign, Gitleaks, TruffleHog, Checkov |
 | 11 | `fedora_gaming` | Fedora 44 | Steam, Lutris, Heroic, Wine, umu, Proton, MangoHud, gamescope, émulateurs |
@@ -55,6 +55,11 @@ ils sont aussi accessibles en direct :
 | Environnement | Profil | Ajoute |
 | --- | --- | --- |
 | `ubuntu_dev_python` | `data` | DuckDB, JupyterLab, pandas, polars, pyarrow, scikit-learn, pgcli/mycli/litecli/harlequin, venv `~/data_env` (alias `data-env`) |
+| `ubuntu_dev_devops` | `cloud` | CLI AWS, Google Cloud et Azure (~1,5 Go) |
+
+Un profil se déclare de deux façons : un fichier `packages.<profil>.txt` quand
+il ajoute des paquets apt, ou une ligne dans `profiles.txt` quand il ne change
+que le comportement du `post_install.sh`.
 
 * * *
 
@@ -200,6 +205,8 @@ les scripts restent disponibles à la main :
 - **Accélération GPU** : CUDA (NVIDIA) ou ROCm (AMD) utilisables uniquement si les drivers sont installés sur l'hôte
 - **Mode CPU** : En absence de GPU compatible, les traitements IA seront beaucoup plus lents
 - **Mémoire** : Les modèles Ollama peuvent consommer plusieurs Go de RAM
+- **PyTorch dans un venv** : torch est installé par `uv` dans `~/ia_env`, et non dans le Python global de pyenv. Activez-le avec `ia-env` avant d'importer torch.
+- **Version de Python** : plafonnée (`IA_PYTHON_MAX_MINOR` dans `versions.sh`) car PyTorch ne publie pas de wheels pour les toutes dernières versions de Python.
 
 * * *
 
@@ -213,8 +220,9 @@ les scripts restent disponibles à la main :
 
 ### **ubuntu_dev_devops / ubuntu_dev_writing**
 
-- **Taille** : ces environnements sont volumineux (DevOps installe 10+ CLI cloud ; Writing installe TeXLive, ~3 Go)
+- **Taille** : Writing installe TeXLive (~3 Go)
 - **DevOps** : `kubectl`/`helm`/`kind` agissent sur des clusters externes — pensez à monter votre `~/.kube/config` si besoin
+- **CLI cloud** : `aws`, `gcloud` et `az` ne sont **plus installées par défaut**. Elles pèsent ~1,5 Go ensemble pour un usage presque toujours mono-cloud. Pour les ajouter : `./install.sh ubuntu_dev_devops --profile cloud`
 
 * * *
 

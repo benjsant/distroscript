@@ -5,6 +5,9 @@ source ~/versions.sh
 source ~/shell_setup.sh
 source ~/fetch.sh
 
+# Profil : "base" (défaut) ou "cloud"
+PROFILE="${1:-base}"
+
 PACKAGE_FILE="$HOME/packages.txt"
 
 if [ ! -f "$PACKAGE_FILE" ]; then
@@ -61,32 +64,41 @@ if ! command -v kind &>/dev/null; then
   download_bin "https://kind.sigs.k8s.io/dl/${KIND_VER}/kind-linux-amd64" "$LOCAL_BIN/kind"
 fi
 
-# AWS CLI v2
-if ! command -v aws &>/dev/null; then
-  echo "Installation d'awscli v2..."
-  tmp_zip="$(mktemp --suffix=.zip)"
-  tmp_dir="$(mktemp -d)"
-  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "$tmp_zip"
-  unzip -q "$tmp_zip" -d "$tmp_dir"
-  sudo "$tmp_dir/aws/install" --update
-  rm -rf "$tmp_zip" "$tmp_dir"
-fi
+# CLI cloud — profil "cloud" uniquement.
+# aws + gcloud + az pèsent ~1,5 Go ensemble, pour un usage presque toujours
+# mono-cloud. Le coeur Kubernetes (kubectl/helm/k9s/kustomize/kind) et Terraform
+# restent installés par défaut.
+if [ "$PROFILE" = "cloud" ]; then
+  # AWS CLI v2
+  if ! command -v aws &>/dev/null; then
+    echo "Installation d'awscli v2..."
+    tmp_zip="$(mktemp --suffix=.zip)"
+    tmp_dir="$(mktemp -d)"
+    curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "$tmp_zip"
+    unzip -q "$tmp_zip" -d "$tmp_dir"
+    sudo "$tmp_dir/aws/install" --update
+    rm -rf "$tmp_zip" "$tmp_dir"
+  fi
 
-# Google Cloud CLI
-if ! command -v gcloud &>/dev/null; then
-  echo "Installation de gcloud CLI..."
-  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
-    | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
-  echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
-    | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list >/dev/null
-  sudo apt-get update
-  sudo apt-get install -y google-cloud-cli
-fi
+  # Google Cloud CLI
+  if ! command -v gcloud &>/dev/null; then
+    echo "Installation de gcloud CLI..."
+    curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+      | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+      | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list >/dev/null
+    sudo apt-get update
+    sudo apt-get install -y google-cloud-cli
+  fi
 
-# Azure CLI
-if ! command -v az &>/dev/null; then
-  echo "Installation d'Azure CLI..."
-  curl --retry 3 --retry-delay 2 --connect-timeout 10 -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+  # Azure CLI
+  if ! command -v az &>/dev/null; then
+    echo "Installation d'Azure CLI..."
+    curl --retry 3 --retry-delay 2 --connect-timeout 10 -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+  fi
+else
+  echo "Profil base : CLI cloud (aws, gcloud, az) non installées."
+  echo "  Pour les ajouter : ./install.sh ubuntu_dev_devops --profile cloud"
 fi
 
 # Completions kubectl/helm/kind + alias k

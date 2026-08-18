@@ -15,6 +15,12 @@ NVM_VERSION="v0.40.7"
 PYTHON_VERSION="3.14.7"
 GO_VERSION="1.26.6"
 
+# ubuntu_dev_ia : version mineure maximale de Python acceptée pour le venv
+# PyTorch. Distincte de PYTHON_VERSION car PyTorch ne publie pas de wheels pour
+# les toutes dernières versions de Python — au-delà, torch se compile depuis les
+# sources ou ne s'installe pas. À relever quand PyTorch suit.
+IA_PYTHON_MAX_MINOR="13"
+
 # Versions de repli des outils résolus via l'API GitHub.
 # Utilisées quand l'API est indisponible (limite de 60 requêtes/h et par IP) —
 # voir github_latest_tag() dans lib/fetch.sh. À rafraîchir de temps en temps.

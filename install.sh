@@ -32,10 +32,18 @@ mapfile -t BOXES < <(
     -printf '%h\n' | xargs -n1 basename | sort
 )
 
-# Profils d'un environnement : un profil = un fichier packages.<profil>.txt
+# Profils d'un environnement. Un profil est déclaré de deux façons :
+#   - un fichier packages.<profil>.txt   (le profil ajoute des paquets)
+#   - une ligne dans profiles.txt        (le profil ne change que le post_install)
+# La seconde forme sert aux profils qui n'ajoutent aucun paquet apt, comme les
+# CLI cloud de devops, installées depuis leurs propres dépôts.
 box_profiles() {
-  find "$SCRIPT_DIR/$1" -maxdepth 1 -name 'packages.*.txt' -printf '%f\n' 2>/dev/null \
-    | sed -E 's/^packages\.(.*)\.txt$/\1/' | sort
+  {
+    find "$SCRIPT_DIR/$1" -maxdepth 1 -name 'packages.*.txt' -printf '%f\n' 2>/dev/null \
+      | sed -E 's/^packages\.(.*)\.txt$/\1/'
+    [ -f "$SCRIPT_DIR/$1/profiles.txt" ] \
+      && grep -v '^\s*#' "$SCRIPT_DIR/$1/profiles.txt" | grep -v '^\s*$'
+  } 2>/dev/null | sort -u
 }
 
 box_exists_in_repo() {

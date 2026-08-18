@@ -1,0 +1,3 @@
+# Profils de ubuntu_dev_devops.
+# cloud : ajoute les CLI AWS, Google Cloud et Azure (~1,5 Go).
+cloud

@@ -22,6 +22,7 @@ cp "$SCRIPT_DIR/post_install.sh" "$HOME_DIR/"
 cp "$SCRIPT_DIR/packages.txt" "$HOME_DIR/"
 cp "$LIB_DIR/versions.sh" "$HOME_DIR/"
 cp "$LIB_DIR/shell_setup.sh" "$HOME_DIR/"
+cp "$LIB_DIR/fetch.sh" "$HOME_DIR/"
 
 EXTRA_FLAGS=""
 detect_nvidia

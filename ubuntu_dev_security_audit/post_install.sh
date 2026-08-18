@@ -3,6 +3,7 @@ set -euo pipefail
 
 source ~/versions.sh
 source ~/shell_setup.sh
+source ~/fetch.sh
 
 PACKAGE_FILE="$HOME/packages.txt"
 
@@ -49,21 +50,18 @@ fi
 # Cosign (Sigstore)
 if ! command -v cosign &>/dev/null; then
   echo "Installation de Cosign..."
-  COSIGN_VER="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://api.github.com/repos/sigstore/cosign/releases/latest | jq -r .tag_name)"
-  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://github.com/sigstore/cosign/releases/download/${COSIGN_VER}/cosign-linux-amd64" \
-    -o "$LOCAL_BIN/cosign"
-  chmod +x "$LOCAL_BIN/cosign"
+  COSIGN_VER="$(github_latest_tag sigstore/cosign "$COSIGN_FALLBACK")"
+  download_bin "https://github.com/sigstore/cosign/releases/download/${COSIGN_VER}/cosign-linux-amd64" \
+    "$LOCAL_BIN/cosign"
 fi
 
 # Gitleaks
 if ! command -v gitleaks &>/dev/null; then
   echo "Installation de Gitleaks..."
-  GL_VER="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r .tag_name | sed 's/^v//')"
-  tmp_tgz="$(mktemp --suffix=.tgz)"
-  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GL_VER}/gitleaks_${GL_VER}_linux_x64.tar.gz" \
-    -o "$tmp_tgz"
-  tar -xzf "$tmp_tgz" -C "$LOCAL_BIN" gitleaks
-  rm -f "$tmp_tgz"
+  GL_TAG="$(github_latest_tag gitleaks/gitleaks "$GITLEAKS_FALLBACK")"
+  GL_VER="${GL_TAG#v}"
+  download_tar_extract "https://github.com/gitleaks/gitleaks/releases/download/v${GL_VER}/gitleaks_${GL_VER}_linux_x64.tar.gz" \
+    "$LOCAL_BIN" gitleaks
 fi
 
 # TruffleHog (autre détection de secrets, complémentaire à gitleaks)

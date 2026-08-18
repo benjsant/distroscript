@@ -3,6 +3,7 @@ set -euo pipefail
 
 source ~/versions.sh
 source ~/shell_setup.sh
+source ~/fetch.sh
 
 PACKAGE_FILE="$HOME/packages.txt"
 
@@ -43,11 +44,8 @@ fi
 # k9s (tarball)
 if ! command -v k9s &>/dev/null; then
   echo "Installation de k9s..."
-  K9S_VER="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://api.github.com/repos/derailed/k9s/releases/latest | jq -r .tag_name)"
-  tmp_tgz="$(mktemp --suffix=.tgz)"
-  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://github.com/derailed/k9s/releases/download/${K9S_VER}/k9s_Linux_amd64.tar.gz" -o "$tmp_tgz"
-  tar -xzf "$tmp_tgz" -C "$LOCAL_BIN" k9s
-  rm -f "$tmp_tgz"
+  K9S_VER="$(github_latest_tag derailed/k9s "$K9S_FALLBACK")"
+  download_tar_extract "https://github.com/derailed/k9s/releases/download/${K9S_VER}/k9s_Linux_amd64.tar.gz" "$LOCAL_BIN" k9s
 fi
 
 # Kustomize (script officiel)
@@ -59,9 +57,8 @@ fi
 # Kind
 if ! command -v kind &>/dev/null; then
   echo "Installation de kind..."
-  KIND_VER="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://api.github.com/repos/kubernetes-sigs/kind/releases/latest | jq -r .tag_name)"
-  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://kind.sigs.k8s.io/dl/${KIND_VER}/kind-linux-amd64" -o "$LOCAL_BIN/kind"
-  chmod +x "$LOCAL_BIN/kind"
+  KIND_VER="$(github_latest_tag kubernetes-sigs/kind "$KIND_FALLBACK")"
+  download_bin "https://kind.sigs.k8s.io/dl/${KIND_VER}/kind-linux-amd64" "$LOCAL_BIN/kind"
 fi
 
 # AWS CLI v2

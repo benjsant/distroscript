@@ -3,6 +3,7 @@ set -euo pipefail
 
 source ~/versions.sh
 source ~/shell_setup.sh
+source ~/fetch.sh
 
 PACKAGE_FILE="$HOME/packages.txt"
 
@@ -38,11 +39,10 @@ fi
 # Vale (binary)
 if ! command -v vale &>/dev/null; then
   echo "Installation de Vale..."
-  VALE_VER="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://api.github.com/repos/errata-ai/vale/releases/latest | jq -r .tag_name | sed 's/^v//')"
-  tmp_tgz="$(mktemp --suffix=.tgz)"
-  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://github.com/errata-ai/vale/releases/download/v${VALE_VER}/vale_${VALE_VER}_Linux_64-bit.tar.gz" -o "$tmp_tgz"
-  tar -xzf "$tmp_tgz" -C "$LOCAL_BIN" vale
-  rm -f "$tmp_tgz"
+  VALE_TAG="$(github_latest_tag errata-ai/vale "$VALE_FALLBACK")"
+  VALE_VER="${VALE_TAG#v}"
+  download_tar_extract "https://github.com/errata-ai/vale/releases/download/v${VALE_VER}/vale_${VALE_VER}_Linux_64-bit.tar.gz" \
+    "$LOCAL_BIN" vale
 fi
 
 # Pandoc Eisvogel template (template PDF élégant très utilisé)
@@ -50,13 +50,12 @@ EISVOGEL_DIR="$HOME/.local/share/pandoc/templates"
 if [ ! -f "$EISVOGEL_DIR/eisvogel.latex" ]; then
   echo "Installation du template Pandoc Eisvogel..."
   mkdir -p "$EISVOGEL_DIR"
-  EIS_VER="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://api.github.com/repos/Wandmalfarbe/pandoc-latex-template/releases/latest | jq -r .tag_name)"
-  tmp_tgz="$(mktemp --suffix=.tgz)"
+  EIS_VER="$(github_latest_tag Wandmalfarbe/pandoc-latex-template "$EISVOGEL_FALLBACK")"
   tmp_dir="$(mktemp -d)"
-  curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://github.com/Wandmalfarbe/pandoc-latex-template/releases/download/${EIS_VER}/Eisvogel-${EIS_VER#v}.tar.gz" -o "$tmp_tgz"
-  tar -xzf "$tmp_tgz" -C "$tmp_dir"
+  download_tar_extract "https://github.com/Wandmalfarbe/pandoc-latex-template/releases/download/${EIS_VER}/Eisvogel-${EIS_VER#v}.tar.gz" \
+    "$tmp_dir"
   find "$tmp_dir" -name 'eisvogel.latex' -exec cp {} "$EISVOGEL_DIR/" \;
-  rm -rf "$tmp_tgz" "$tmp_dir"
+  rm -rf "$tmp_dir"
 fi
 
 # .bashrc

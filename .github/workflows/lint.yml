@@ -67,3 +67,51 @@ jobs:
             done
           done
           exit "$fail"
+
+  cli:
+    name: interface non interactive
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # distrobox n'est pas installé sur le runner : ces tests couvrent la
+      # logique d'arguments, pas la création de box. C'est déjà la première
+      # couverture des chemins d'installation, jusqu'ici jamais exécutés.
+      - name: --help et --list répondent
+        run: |
+          for f in install.sh update.sh uninstall.sh; do
+            ./"$f" --help >/dev/null || { echo "::error::$f --help échoue"; exit 1; }
+            ./"$f" --list >/dev/null || { echo "::error::$f --list échoue"; exit 1; }
+          done
+
+      - name: --list énumère bien tous les environnements
+        run: |
+          expected=$(find . -maxdepth 2 -name install.sh -not -path ./install.sh -printf '%h\n' \
+                     | xargs -n1 basename | sort | wc -l)
+          got=$(./install.sh --list | wc -l)
+          [ "$expected" = "$got" ] || {
+            echo "::error::--list liste $got environnements, $expected attendus"; exit 1; }
+
+      - name: les arguments invalides sont rejetés
+        run: |
+          fail=0
+          ./install.sh environnement-inexistant   >/dev/null 2>&1 && { echo "::error::nom invalide accepté"; fail=1; }
+          ./install.sh --all ubuntu_dev_go        >/dev/null 2>&1 && { echo "::error::--all + nom accepté"; fail=1; }
+          ./install.sh ubuntu_dev_go --profile xx >/dev/null 2>&1 && { echo "::error::profil invalide accepté"; fail=1; }
+          ./install.sh --option-bidon             >/dev/null 2>&1 && { echo "::error::option inconnue acceptée"; fail=1; }
+          ./uninstall.sh --all ubuntu_dev_go      >/dev/null 2>&1 && { echo "::error::uninstall --all + nom accepté"; fail=1; }
+          exit "$fail"
+
+      # --dry-run doit être inoffensif : aucune box, aucun dossier créé.
+      - name: --dry-run n exécute rien
+        run: |
+          fail=0
+          for box in $(./install.sh --list | cut -f1); do
+            ./install.sh "$box" --yes --dry-run >/dev/null || {
+              echo "::error::dry-run échoue pour $box"; fail=1; }
+          done
+          ./install.sh ubuntu_dev_python --profile data --yes --dry-run >/dev/null || fail=1
+          ./uninstall.sh ubuntu_dev_go --yes --dry-run >/dev/null || fail=1
+          [ -d "$HOME/distrobox" ] && [ -n "$(ls -A "$HOME/distrobox" 2>/dev/null)" ] && {
+            echo "::error::le dry-run a créé des fichiers dans ~/distrobox"; fail=1; }
+          exit "$fail"

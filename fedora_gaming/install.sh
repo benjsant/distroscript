@@ -77,8 +77,7 @@ if command -v lspci &>/dev/null && lspci | grep -i 'NVIDIA' >/dev/null 2>&1; the
     echo ""
     echo "⚠ GPU NVIDIA détecté mais nvidia-container-toolkit absent."
     echo "  Sans lui, aucune accélération 3D dans la box — les jeux ne tourneront pas."
-    read -rp "  Continuer quand même ? (o/N) " ans
-    [[ "$ans" =~ ^[oO]$ ]] || { echo "Annulé."; exit 1; }
+    confirm "  Continuer quand même ?" || { echo "Annulé."; exit 1; }
   fi
 fi
 

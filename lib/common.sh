@@ -1,6 +1,38 @@
 #!/bin/bash
 # Fonctions partagées entre tous les scripts
 
+# ---------------------------------------------------------------------------
+# Mode non interactif
+# ---------------------------------------------------------------------------
+# Piloté par deux variables d'environnement, héritées automatiquement par les
+# install.sh d'environnement lancés depuis le install.sh racine :
+#
+#   DISTROSCRIPT_ASSUME_YES=1  répond "oui" aux questions NON destructives
+#   DISTROSCRIPT_RECREATE=1    autorise en plus la destruction d'une box existante
+#
+# La distinction est volontaire : --yes ne doit jamais détruire une box que
+# l'utilisateur n'a pas explicitement demandé à recréer.
+
+assume_yes() { [ "${DISTROSCRIPT_ASSUME_YES:-0}" = "1" ]; }
+allow_recreate() { [ "${DISTROSCRIPT_RECREATE:-0}" = "1" ]; }
+
+# Pose une question oui/non. En mode non interactif, répond "oui" sans demander.
+#   confirm "<question>" [defaut_oui]
+confirm() {
+  local question="$1" default="${2:-non}" answer
+  if assume_yes; then
+    echo "$question [auto: oui]"
+    return 0
+  fi
+  if [ "$default" = "oui" ]; then
+    read -rp "$question [O/n] " answer
+    [[ ! "$answer" =~ ^[nN]$ ]]
+  else
+    read -rp "$question [o/N] " answer
+    [[ "$answer" =~ ^[oOyY]$ ]]
+  fi
+}
+
 check_not_root() {
   if [ "$EUID" -eq 0 ]; then
     echo "Ce script ne doit pas être exécuté en tant que root." >&2
@@ -49,8 +81,7 @@ check_locale_for_ubuntu_box() {
     exit 1
   fi
 
-  read -rp "Lancer fix_locale.sh maintenant ? [O/n] " ans
-  if [[ "$ans" =~ ^[nN]$ ]]; then
+  if ! confirm "Lancer fix_locale.sh maintenant ?" oui; then
     echo "⚠ Tu continues sans appliquer le fix — la création de la box risque d'échouer."
     return 0
   fi
@@ -81,16 +112,22 @@ box_exists() {
 check_or_recreate_box() {
   local box_name="$1"
   local home_dir="$2"
-  if box_exists "$box_name"; then
-    read -rp "La distrobox '$box_name' existe déjà. La supprimer et recréer ? (o/N) " confirm
-    if [[ "$confirm" =~ ^[oO]$ ]]; then
-      distrobox rm "$box_name" --force
-      rm -rf "$home_dir"
-    else
-      echo "Annulé."
-      exit 1
-    fi
+  box_exists "$box_name" || return 0
+
+  # Destruction : jamais implicite. --yes ne suffit pas, il faut --recreate.
+  if allow_recreate; then
+    echo "La distrobox '$box_name' existe déjà — suppression (--recreate)."
+  elif assume_yes; then
+    echo "La distrobox '$box_name' existe déjà." >&2
+    echo "Relancez avec --recreate pour la supprimer et la recréer." >&2
+    exit 1
+  elif ! confirm "La distrobox '$box_name' existe déjà. La supprimer et recréer ?"; then
+    echo "Annulé."
+    exit 1
   fi
+
+  distrobox rm "$box_name" --force
+  rm -rf "$home_dir"
 }
 
 # Détecte la distribution hôte : "fedora" (inclut Nobara/Bazzite), "debian" (inclut Mint/Ubuntu), ou "other"

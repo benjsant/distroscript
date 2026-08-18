@@ -202,6 +202,78 @@ do_update() {
   fi
 }
 
+# ---------- CLI ----------
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ./update.sh                     menu interactif
+  ./update.sh <environnement>     met à jour un environnement
+  ./update.sh --all               met à jour tous les environnements
+  ./update.sh --list              liste les environnements
+
+Options:
+  -h, --help    affiche cette aide
+
+Sort en 1 si au moins un environnement a rencontré une erreur.
+EOF
+}
+
+TARGET=""
+DO_ALL=0
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -h|--help) usage; exit 0 ;;
+    --list)    printf '%s\n' "${BOXES[@]}"; exit 0 ;;
+    --all)     DO_ALL=1; shift ;;
+    -*)        echo "Option inconnue : $1" >&2; usage >&2; exit 1 ;;
+    *)
+      if [ -n "$TARGET" ]; then
+        echo "Un seul environnement à la fois." >&2
+        exit 1
+      fi
+      TARGET="$1"; shift
+      ;;
+  esac
+done
+
+if [ "$DO_ALL" -eq 1 ] && [ -n "$TARGET" ]; then
+  echo "--all et un nom d'environnement sont exclusifs." >&2
+  exit 1
+fi
+
+update_all() {
+  for box in "${BOXES[@]}"; do
+    do_update "$box"
+  done
+  echo ""
+  if [ "${UPDATE_HAD_ERRORS:-0}" -eq 0 ]; then
+    echo "Tous les environnements sont à jour."
+  else
+    echo "Terminé, mais au moins un environnement a rencontré des erreurs." >&2
+    exit 1
+  fi
+}
+
+if [ "$DO_ALL" -eq 1 ]; then
+  update_all
+  exit 0
+fi
+
+if [ -n "$TARGET" ]; then
+  found=0
+  for b in "${BOXES[@]}"; do [ "$b" = "$TARGET" ] && found=1; done
+  if [ "$found" -eq 0 ]; then
+    echo "Environnement inconnu : $TARGET" >&2
+    echo "Disponibles : ${BOXES[*]}" >&2
+    exit 1
+  fi
+  do_update "$TARGET"
+  [ "${UPDATE_HAD_ERRORS:-0}" -eq 0 ] || exit 1
+  exit 0
+fi
+
 # ---------- Menu ----------
 
 echo "Quel environnement mettre à jour ?"
@@ -217,16 +289,7 @@ case "$choix" in
     exit 0
     ;;
   a|A)
-    for box in "${BOXES[@]}"; do
-      do_update "$box"
-    done
-    echo ""
-    if [ "${UPDATE_HAD_ERRORS:-0}" -eq 0 ]; then
-      echo "Tous les environnements sont à jour."
-    else
-      echo "Terminé, mais au moins un environnement a rencontré des erreurs." >&2
-      exit 1
-    fi
+    update_all
     ;;
   *)
     if [[ "$choix" =~ ^[0-9]+$ ]] && (( choix >= 1 && choix <= ${#BOXES[@]} )); then

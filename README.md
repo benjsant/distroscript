@@ -2,8 +2,8 @@
 
 ![image](featured_image.png)
 
-**DistroScript** est un ensemble de scripts Bash permettant de créer et configurer automatiquement des environnements de développement isolés grâce à **Distrobox**.
-Chaque environnement est basé sur Ubuntu 24.04 et préinstallé avec les outils nécessaires à un usage ciblé.
+**DistroScript** est un ensemble de scripts Bash permettant de créer et configurer automatiquement des environnements isolés grâce à **Distrobox**.
+Chaque environnement est préinstallé avec les outils nécessaires à un usage ciblé : dix environnements de développement basés sur Ubuntu 24.04, et deux environnements de jeu basés sur Fedora 44 et sur l'image Arch `steambox`.
 
 * * *
 
@@ -77,6 +77,39 @@ git clone https://github.com/benjsant/distroscripts.git
 cd distroscripts
 ./install.sh
 ```
+
+### Mode non interactif
+
+Les trois scripts acceptent des arguments, ce qui les rend scriptables et
+testables en CI :
+
+```bash
+./install.sh --list                                  # énumère les envs et leurs profils
+./install.sh ubuntu_dev_go --yes                     # installe sans poser de question
+./install.sh ubuntu_dev_python --profile data --yes
+./install.sh fedora_gaming --yes --dry-run           # montre sans exécuter
+./install.sh --all --yes
+
+./update.sh ubuntu_dev_go
+./update.sh --all                                    # sort en 1 si un env a échoué
+
+./uninstall.sh ubuntu_dev_go --yes
+./uninstall.sh ubuntu_dev_go --dry-run               # montre ce qui serait supprimé
+```
+
+| Option | Effet |
+| --- | --- |
+| `-y`, `--yes` | Répond « oui » aux questions **non destructives** |
+| `--recreate` | Autorise en plus la suppression d'une box déjà installée |
+| `-n`, `--dry-run` | Affiche ce qui serait fait, sans aucun effet de bord |
+| `--list` | Liste les environnements, une par ligne |
+
+`--yes` ne détruit **jamais** une box existante : sans `--recreate`, le script
+s'arrête avec un message explicite. La distinction est volontaire — une
+automatisation ne doit pas supprimer un environnement par inadvertance.
+
+`--yes` n'installe pas non plus VS Code sur l'hôte : modifier le système hôte
+est un effet de bord qu'un mode automatique ne doit pas déclencher en silence.
 
 ### Mise à jour des environnements existants
 

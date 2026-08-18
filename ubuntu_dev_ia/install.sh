@@ -31,8 +31,7 @@ if command -v lspci &>/dev/null; then
 fi
 
 if [ "$MODE" = "cpu" ]; then
-  read -rp "Aucun GPU NVIDIA/ROCm détecté. Continuer en mode CPU ? (o/N) " answer
-  if [[ ! "$answer" =~ ^[oO]$ ]]; then
+  if ! confirm "Aucun GPU NVIDIA/ROCm détecté. Continuer en mode CPU ?"; then
     echo "Annulé." >&2
     exit 1
   fi

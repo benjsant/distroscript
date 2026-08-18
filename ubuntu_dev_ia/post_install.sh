@@ -13,7 +13,7 @@ if [ ! -f ~/packages.txt ]; then
   echo "packages.txt introuvable." >&2
   exit 1
 fi
-grep -v '^\s*#' ~/packages.txt | grep -v '^\s*$' | xargs -r sudo apt-get install -y
+apt_install_from ~/packages_common.txt ~/packages.txt
 
 setup_local_bin
 

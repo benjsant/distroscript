@@ -5,6 +5,23 @@
 # À copier dans le HOME_DIR de la box par install.sh, puis dans
 # post_install.sh : source ~/shell_setup.sh
 
+# Installe les paquets listés dans un ou plusieurs fichiers, en ignorant
+# commentaires et lignes vides. Remplace le `grep | grep | xargs` recopié dans
+# chaque post_install, et permet de cumuler le fichier commun et celui de
+# l'environnement en un seul appel à apt (donc une seule résolution).
+# Les fichiers absents sont ignorés : un environnement sans profil reste valide.
+apt_install_from() {
+  local files=() f
+  for f in "$@"; do
+    [ -f "$f" ] && files+=("$f")
+  done
+  [ ${#files[@]} -eq 0 ] && return 0
+  grep -hv '^[[:space:]]*#' "${files[@]}" \
+    | grep -v '^[[:space:]]*$' \
+    | sort -u \
+    | xargs -r sudo apt-get install -y
+}
+
 # Crée ~/.local/bin, l'ajoute au PATH (.bashrc + session courante).
 # Expose la variable LOCAL_BIN pour le caller.
 setup_local_bin() {

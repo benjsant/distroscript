@@ -12,7 +12,7 @@ if [ ! -f "$PACKAGE_FILE" ]; then
 fi
 
 sudo apt-get update && sudo apt-get upgrade -y
-grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt-get install -y
+apt_install_from ~/packages_common.txt ~/packages.txt
 
 # Go SDK : tarball officiel installé sous ~/.local/go (pas /usr/local pour éviter sudo)
 GO_ROOT="$HOME/.local/go"

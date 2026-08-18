@@ -1,13 +1,9 @@
-build-essential
-curl
-git
 openssh-client
 libssl-dev
 zlib1g-dev
 libbz2-dev
 libreadline-dev
 libsqlite3-dev
-wget
 llvm
 libncursesw5-dev
 xz-utils
@@ -17,19 +13,8 @@ libxmlsec1-dev
 libffi-dev
 liblzma-dev
 # Utilitaires dev
-bat
-ripgrep
-fzf
-jq
-htop
-tree
-unzip
-tmux
-gh
-rsync
 lsof
 strace
-zsh
 # Python dev
 httpie
 sqlite3

@@ -1,29 +1,13 @@
 # Outils de base
-build-essential
-curl
-git
-ca-certificates
 gnupg
 apt-transport-https
-unzip
-wget
 openssh-client
 software-properties-common
 
 # Utilitaires dev
-bat
-ripgrep
-fzf
-jq
 yq
-htop
-tree
-tmux
-gh
-rsync
 lsof
 strace
-zsh
 bash-completion
 
 # Python pour Ansible / Azure / awscli (déps)

@@ -1,0 +1,26 @@
+# Paquets installés dans TOUS les environnements de développement Ubuntu.
+# Copié dans la box par install.sh, installé par post_install.sh avant le
+# packages.txt propre à l'environnement.
+#
+# Ce fichier est la source de vérité de la phrase du README qui promet ces
+# utilitaires dans chaque environnement.
+
+# Base de compilation et réseau
+build-essential
+curl
+git
+ca-certificates
+wget
+unzip
+
+# Utilitaires dev
+bat
+ripgrep
+fzf
+jq
+htop
+tree
+tmux
+gh
+rsync
+zsh

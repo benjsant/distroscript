@@ -1,11 +1,5 @@
 # Outils de base
-build-essential
-curl
-git
-ca-certificates
 gnupg
-unzip
-wget
 apt-transport-https
 software-properties-common
 
@@ -31,16 +25,3 @@ php-xdebug
 sqlite3
 postgresql-client
 default-mysql-client
-
-# Node (pour Vite/Mix dans Laravel/Symfony) installé via NVM en post_install
-# Utilitaires dev
-bat
-ripgrep
-fzf
-jq
-htop
-tree
-tmux
-gh
-rsync
-zsh

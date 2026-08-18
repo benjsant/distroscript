@@ -39,7 +39,10 @@ Chaque environnement est préinstallé avec les outils nécessaires à un usage 
 | 11 | `fedora_gaming` | Fedora 44 | Steam, Lutris, Heroic, Wine, umu, Proton, MangoHud, gamescope, émulateurs |
 | 12 | `arch_gaming` | steambox (Arch) | Idem, sur l'image gaming maintenue par Universal Blue |
 
-> Les environnements de développement incluent les utilitaires : `bat`, `ripgrep`, `fzf`, `jq`, `htop`, `tmux`, `tree`, `gh`, `zsh`
+> Les environnements de développement incluent tous les utilitaires listés dans
+> `lib/packages_common.txt` : `bat`, `ripgrep`, `fzf`, `jq`, `htop`, `tmux`,
+> `tree`, `gh`, `rsync`, `zsh`, plus la base de compilation. Chaque
+> `packages.txt` ne contient que le delta propre à son environnement.
 
 ### Profils
 
@@ -161,14 +164,20 @@ les scripts restent disponibles à la main :
 ├── fix_locale.sh         # Corrige /etc/locale.conf en forme canonique (.UTF-8)
 ├── revert_locale.sh      # Restaure un backup de /etc/locale.conf
 ├── lib/
-│   ├── common.sh         # Fonctions partagées (hôte, SELinux, cgroups, GPU, locale, logging)
-│   ├── shell_setup.sh    # Helpers communs aux post_install (PATH, prompt, zsh)
-│   └── versions.sh       # Versions centralisées (images, NVM, Python, Go…)
-├── ubuntu_dev_python/    # Chaque environnement contient :
-│   ├── install.sh        #   - install.sh          (création de la box)
-│   ├── post_install.sh   #   - post_install.sh     (configuration dans la box)
-│   ├── packages.txt      #   - packages.txt        (paquets apt)
-│   └── packages.data.txt #   - packages.<p>.txt    (paquets d'un profil, optionnel)
+│   ├── common.sh          # Fonctions partagées (hôte, SELinux, cgroups, GPU, locale, logging)
+│   ├── box_common.sh      # Socle générique des install.sh Ubuntu
+│   ├── shell_setup.sh     # Helpers communs aux post_install (PATH, prompt, zsh)
+│   ├── fetch.sh           # Téléchargements gardés (API GitHub, checksums)
+│   ├── manifest.sh        # Génération de manifestes distrobox-assemble
+│   ├── packages_common.txt # Paquets installés dans TOUS les envs Ubuntu
+│   └── versions.sh        # Versions centralisées (images, NVM, Python, Go…)
+├── tests/                 # Tests unitaires bats des fonctions pures
+├── ubuntu_dev_python/     # Chaque environnement contient :
+│   ├── install.sh         #   - install.sh          (déclaration, ~10 lignes)
+│   ├── post_install.sh    #   - post_install.sh     (configuration dans la box)
+│   ├── verify.sh          #   - verify.sh           (vérification dans la box)
+│   ├── packages.txt       #   - packages.txt        (paquets propres à l'env)
+│   └── packages.data.txt  #   - packages.<p>.txt    (paquets d'un profil, optionnel)
 ├── ubuntu_dev_ia/
 ├── ubuntu_dev_rust/
 ├── ubuntu_dev_go/

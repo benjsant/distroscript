@@ -1,11 +1,5 @@
 # Outils de base
-build-essential
-curl
-git
-ca-certificates
 gnupg
-unzip
-wget
 
 # LaTeX (lourd, ~3-4 Go avec extra ; on garde recommended + extra + français)
 texlive-latex-base
@@ -36,22 +30,10 @@ aspell-en
 hunspell-fr
 hunspell-en-us
 
-# Node.js pour Marp (installé via NVM dans post_install)
-
 # Python pour pandoc filters (panflute, pandoc-mermaid)
 python3
 python3-pip
 python3-venv
 
 # Utilitaires dev
-bat
-ripgrep
-fzf
-jq
-htop
-tree
-tmux
-gh
-rsync
-zsh
 imagemagick

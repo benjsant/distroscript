@@ -65,7 +65,30 @@ jobs:
                 fail=1
               fi
             done
+            # Les environnements Ubuntu passent par lib/box_common.sh, qui
+            # exige un verify.sh exécuté dans la box.
+            case "$dir" in
+              ubuntu_dev_*)
+                [ -f "${dir}verify.sh" ] || { echo "::error::${dir} n'a pas de verify.sh"; fail=1; }
+                ;;
+            esac
           done
+          exit "$fail"
+
+      # Le bloc commun ne doit pas réapparaître dans un packages.txt : c'est la
+      # régression que la déduplication doit empêcher.
+      - name: Pas de duplication du bloc commun
+        run: |
+          fail=0
+          while IFS= read -r pkg; do
+            [ -n "$pkg" ] || continue
+            for f in ubuntu_dev_*/packages.txt; do
+              if grep -qx "$pkg" "$f"; then
+                echo "::error file=$f::'$pkg' est déjà dans lib/packages_common.txt"
+                fail=1
+              fi
+            done
+          done < <(grep -v '^[[:space:]]*#' lib/packages_common.txt | grep -v '^[[:space:]]*$')
           exit "$fail"
 
   cli:

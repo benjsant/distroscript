@@ -17,11 +17,11 @@ fi
 
 # 1. Système
 sudo apt-get update && sudo apt-get upgrade -y
-grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$' | xargs -r sudo apt-get install -y
+apt_install_from ~/packages_common.txt ~/packages.txt
 
 if [ "$PROFILE" = "data" ] && [ -f "$HOME/packages.data.txt" ]; then
   echo "Profil data : installation des paquets additionnels..."
-  grep -v '^\s*#' "$HOME/packages.data.txt" | grep -v '^\s*$' | xargs -r sudo apt-get install -y
+  apt_install_from "$HOME/packages.data.txt"
 fi
 
 setup_local_bin

@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+# Seul environnement Ubuntu à ne pas passer par lib/box_common.sh : il détecte
+# le backend GPU (nvidia/rocm/cpu), monte ROCm et active systemd sous condition.
 BOX_NAME="ubuntu_dev_ia"
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 LIB_DIR="$SCRIPT_DIR/../lib"
@@ -9,6 +11,17 @@ LOG_FILE="$HOME/distrobox/${BOX_NAME}_install.log"
 
 source "$LIB_DIR/common.sh"
 source "$LIB_DIR/versions.sh"
+
+case "${1:-}" in
+  -h|--help)
+    echo "Usage: $0"
+    echo "Crée la box IA. Le backend GPU (nvidia / rocm / cpu) est détecté"
+    echo "automatiquement ; en l'absence de GPU, une confirmation est demandée."
+    exit 0
+    ;;
+  "") ;;
+  *)  echo "Option inconnue : $1" >&2; exit 1 ;;
+esac
 
 check_not_root
 force_utf8_locale
@@ -46,6 +59,9 @@ cp "$SCRIPT_DIR/post_install.sh" "$HOME_DIR/"
 cp "$SCRIPT_DIR/packages.txt" "$HOME_DIR/"
 cp "$LIB_DIR/versions.sh" "$HOME_DIR/"
 cp "$LIB_DIR/shell_setup.sh" "$HOME_DIR/"
+cp "$LIB_DIR/fetch.sh" "$HOME_DIR/"
+cp "$LIB_DIR/packages_common.txt" "$HOME_DIR/"
+cp "$SCRIPT_DIR/verify.sh" "$HOME_DIR/"
 
 EXTRA_FLAGS=""
 detect_nvidia  # ajoute /dev/dri + --nvidia si toolkit présent
@@ -80,15 +96,7 @@ echo "Lancement du post-install (mode $MODE)..."
 distrobox enter "$BOX_NAME" -- bash -c "bash ~/post_install.sh $MODE"
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -ic "
-  command -v ollama &>/dev/null         && echo '  [ok] Ollama'   || echo '  [!!] Ollama manquant'
-  [ -d \$HOME/.pyenv ]                  && echo '  [ok] pyenv'    || echo '  [!!] pyenv manquant'
-  \$HOME/.pyenv/shims/python3 -c 'import torch; print(\"  [ok] PyTorch\", torch.__version__)' 2>/dev/null \
-    || echo '  [!!] PyTorch manquant'
-  [ -f \$HOME/.local/bin/uv ]           && echo '  [ok] uv'       || echo '  [!!] uv manquant'
-  [ -d \$HOME/ia_env ]                  && echo '  [ok] venv ia_env' || echo '  [!!] venv ia_env manquant'
-  command -v gh &>/dev/null             && echo '  [ok] gh'       || echo '  [!!] gh manquant'
-" 2>/dev/null || true
+distrobox enter "$BOX_NAME" -- bash -ic "bash ~/verify.sh" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

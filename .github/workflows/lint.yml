@@ -74,9 +74,22 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # distrobox n'est pas installé sur le runner : ces tests couvrent la
-      # logique d'arguments, pas la création de box. C'est déjà la première
-      # couverture des chemins d'installation, jusqu'ici jamais exécutés.
+      # Les scripts vérifient leurs prérequis avant tout : sans distrobox ni
+      # moteur de conteneur, ils sortent en 1 et aucun test ne peut aller plus
+      # loin. On les installe donc pour de vrai plutôt que d'affaiblir les
+      # vérifications pour les besoins du test.
+      - name: Installer podman et distrobox
+        run: |
+          command -v podman >/dev/null || sudo apt-get update -qq && sudo apt-get install -y -qq podman
+          curl -fsSL https://raw.githubusercontent.com/89luca89/distrobox/main/install \
+            | sh -s -- --prefix "$HOME/.local"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Vérifier les prérequis
+        run: |
+          distrobox --version
+          podman --version
+
       - name: --help et --list répondent
         run: |
           for f in install.sh update.sh uninstall.sh; do

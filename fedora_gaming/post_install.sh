@@ -28,13 +28,26 @@ sudo dnf install -y \
 # une Fedora standard, là où les COPR gaming répandus (gloriouseggroll) sont des
 # overlays de distro complets, déconseillés hors Nobara.
 echo "Activation de Terra..."
+
+# Import explicite de la clé AVANT toute utilisation du dépôt. Sans ça,
+# repo_gpgcheck déclenche une demande de confirmation interactive ; en
+# non-interactif elle est refusée, le dépôt apparaît vide, et l'installation
+# des paquets Terra échoue silencieusement.
+sudo rpm --import "https://repos.fyralabs.com/terra${FEDORA_REL}/key.asc"
+
+# includepkgs : Terra ne peut fournir QUE ces trois paquets et ne peut donc pas
+# masquer une version Fedora ou RPM Fusion de quoi que ce soit d'autre. Nobara
+# maintient à l'inverse une longue liste exclude= — la liste blanche est plus
+# sûre, car elle n'a pas besoin d'être tenue à jour.
 sudo tee /etc/yum.repos.d/terra.repo >/dev/null <<'EOF'
 [terra]
 name=Terra $releasever
 metalink=https://tetsudou.fyralabs.com/metalink?repo=terra$releasever&arch=$basearch
 gpgkey=https://repos.fyralabs.com/terra$releasever/key.asc
 gpgcheck=1
+repo_gpgcheck=1
 enabled=1
+includepkgs=umu-launcher heroic-games-launcher protonplus
 EOF
 
 sudo dnf upgrade -y

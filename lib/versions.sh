@@ -6,7 +6,7 @@
 # shellcheck disable=SC2034
 
 UBUNTU_IMAGE="quay.io/toolbx/ubuntu-toolbox:24.04"
-FEDORA_IMAGE="quay.io/fedora/fedora-toolbox:43"
+FEDORA_IMAGE="quay.io/fedora/fedora-toolbox:44"
 # Image gaming prête à l'emploi maintenue par Universal Blue (ex-bazzite-arch).
 # ~11 Go : contient déjà Steam, Lutris, Wine, MangoHud/vkBasalt (+ lib32),
 # protontricks, steamcmd, la pile audio PipeWire 32 bits et les couches Vulkan.

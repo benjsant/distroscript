@@ -36,7 +36,7 @@ Chaque environnement est basé sur Ubuntu 24.04 et préinstallé avec les outils
 | 8 | `ubuntu_dev_devops` | Ubuntu 24.04 | kubectl, helm, terraform, ansible, awscli, gcloud, az, k9s, kustomize, kind |
 | 9 | `ubuntu_dev_writing` | Ubuntu 24.04 | LaTeX (FR/EN), Pandoc (+ Eisvogel), Marp, Vale |
 | 10 | `ubuntu_dev_security_audit` | Ubuntu 24.04 | Trivy, Syft, Grype, Semgrep, Cosign, Gitleaks, TruffleHog, Checkov |
-| 11 | `fedora_gaming` | Fedora 43 | Steam, Lutris, Heroic, Wine, umu, Proton, MangoHud, gamescope, émulateurs |
+| 11 | `fedora_gaming` | Fedora 44 | Steam, Lutris, Heroic, Wine, umu, Proton, MangoHud, gamescope, émulateurs |
 | 12 | `arch_gaming` | steambox (Arch) | Idem, sur l'image gaming maintenue par Universal Blue |
 
 > Les environnements de développement incluent les utilitaires : `bat`, `ripgrep`, `fzf`, `jq`, `htop`, `tmux`, `tree`, `gh`, `zsh`
@@ -230,13 +230,18 @@ sur une nouvelle machine, un seul script rétablit l'environnement complet.
 - **Flatpak** : volontairement absent de la box — flatpak dans un conteneur ne
   fonctionne pas.
 - **Paquets vérifiés** : la disponibilité de chaque entrée de `packages.txt` a
-  été contrôlée dans une `fedora-toolbox:43` réelle avec RPM Fusion et Terra.
+  été contrôlée dans une `fedora-toolbox:44` réelle avec RPM Fusion et Terra.
   N'ajoutez pas de paquet sans le vérifier — les noms diffèrent entre Fedora,
   Nobara et Arch (`heroic-games-launcher` sur Fedora contre
   `heroic-games-launcher-bin` sur l'AUR, par exemple).
 - **Dépôt Terra** : fournit `umu-launcher`, `heroic-games-launcher` et
   `protonplus`. Préféré aux COPR gaming répandus (`gloriouseggroll/nobara-*`),
   qui sont des overlays de distro complets déconseillés hors Nobara.
+  Terra est maintenu par Fyra Labs (l'équipe d'Ultramarine Linux) et est le
+  dépôt tiers qu'utilise Nobara. Il reste un dépôt tiers : la box le restreint
+  donc par `includepkgs` à ces trois paquets, si bien qu'il ne peut masquer
+  aucun paquet Fedora ou RPM Fusion. Sa clé est importée explicitement et
+  `repo_gpgcheck=1` vérifie aussi la signature des métadonnées.
 - **wine-staging** : Fedora ne fournit que wine stable. Pour staging, ajoutez le
   [dépôt WineHQ](https://gitlab.winehq.org/wine/wine/-/wikis/Download) — ou
   utilisez `arch_gaming`, où staging est dans les dépôts officiels.

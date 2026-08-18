@@ -3,6 +3,7 @@ set -euo pipefail
 
 source ~/versions.sh
 source ~/shell_setup.sh
+source ~/fetch.sh
 
 # Profil : "base" (défaut) ou "data" (ajoute DuckDB, JupyterLab, CLIs SQL, venv data_env)
 PROFILE="${1:-base}"
@@ -86,17 +87,12 @@ if [ "$PROFILE" = "data" ]; then
   # DuckDB CLI
   if ! command -v duckdb &>/dev/null; then
     echo "Installation de DuckDB CLI..."
-    DUCK_VER="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL \
-      https://api.github.com/repos/duckdb/duckdb/releases/latest | jq -r '.tag_name // empty')"
-    if [ -z "$DUCK_VER" ]; then
-      echo "  Impossible de résoudre la dernière version de DuckDB (limite API GitHub ?) : étape ignorée." >&2
-    else
-      tmp_zip="$(mktemp --suffix=.zip)"
-      curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL \
-        "https://github.com/duckdb/duckdb/releases/download/${DUCK_VER}/duckdb_cli-linux-amd64.zip" -o "$tmp_zip"
-      unzip -o "$tmp_zip" -d "$LOCAL_BIN"
-      rm -f "$tmp_zip"
-    fi
+    DUCK_VER="$(github_latest_tag duckdb/duckdb "$DUCKDB_FALLBACK")"
+    tmp_zip="$(mktemp --suffix=.zip)"
+    download_file "https://github.com/duckdb/duckdb/releases/download/${DUCK_VER}/duckdb_cli-linux-amd64.zip" \
+      "$tmp_zip"
+    unzip -o "$tmp_zip" -d "$LOCAL_BIN"
+    rm -f "$tmp_zip"
   fi
 
   # CLIs SQL via uv tool (isolés, mises à jour faciles)

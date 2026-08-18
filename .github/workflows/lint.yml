@@ -128,3 +128,17 @@ jobs:
           [ -d "$HOME/distrobox" ] && [ -n "$(ls -A "$HOME/distrobox" 2>/dev/null)" ] && {
             echo "::error::le dry-run a créé des fichiers dans ~/distrobox"; fail=1; }
           exit "$fail"
+
+  tests:
+    name: tests unitaires (bats)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Installer bats
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq bats
+
+      # Ces tests ne touchent ni à /etc, ni au réseau, ni à distrobox : les
+      # commandes externes sont remplacées par des stubs dans le PATH de test.
+      - name: bats
+        run: bats tests/

@@ -58,6 +58,7 @@ cp "$SCRIPT_DIR/packages.txt" "$HOME_DIR/"
 cp "$SCRIPT_DIR/packages.data.txt" "$HOME_DIR/"
 cp "$LIB_DIR/versions.sh" "$HOME_DIR/"
 cp "$LIB_DIR/shell_setup.sh" "$HOME_DIR/"
+cp "$LIB_DIR/fetch.sh" "$HOME_DIR/"
 
 # Mémorise le profil : update.sh le relit pour savoir quoi mettre à jour
 echo "$PROFILE" > "$HOME_DIR/.profile_name"

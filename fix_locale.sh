@@ -158,39 +158,73 @@ rollback() {
     exit 1
   fi
   echo "Restauration de $BACKUP_FILE → $LOCALE_FILE"
-  sudo cp -a "$BACKUP_FILE" "$LOCALE_FILE"
+  # -L (déréférencement) est indispensable : BACKUP_FILE est un lien symbolique
+  # vers le backup horodaté, et cp -a implique -d, donc copierait le LIEN.
+  # /etc/locale.conf deviendrait alors un lien vers un fichier de backup.
+  sudo cp -aL "$BACKUP_FILE" "$LOCALE_FILE"
   echo "✓ Restauré. Reboot recommandé."
 }
 
-case "${1:-}" in
-  --status|status)
-    print_status
-    ;;
-  --apply|apply)
-    apply_fix
-    ;;
-  --rollback|rollback)
-    rollback
-    ;;
-  ""|--help|-h|help)
-    print_status
-    echo ""
-    if needs_fix; then
-      echo "⚠ /etc/locale.conf contient des entrées non canoniques (.utf8 au lieu de .UTF-8)."
-      echo "  C'est la cause du bug distrobox-init / update-locale sur les boxes Ubuntu."
+usage() {
+  cat <<'EOF'
+Usage : ./fix_locale.sh [option]
+
+Met /etc/locale.conf en forme canonique (fr_FR.UTF-8 au lieu de fr_FR.utf8),
+ce qui débloque distrobox-init sur les images Ubuntu.
+
+Options :
+  (aucune)      diagnostic, puis propose d'appliquer le fix
+  --status      n'affiche que le diagnostic
+  --apply       applique le fix directement (backup horodaté automatique)
+  --rollback    restaure le dernier backup
+  -h, --help    affiche cette aide
+
+Voir aussi ./revert_locale.sh pour choisir parmi plusieurs backups.
+EOF
+}
+
+main() {
+  case "${1:-}" in
+    -h|--help|help)
+      usage
+      ;;
+    --status|status)
+      print_status
+      ;;
+    --apply|apply)
+      apply_fix
+      ;;
+    --rollback|rollback)
+      rollback
+      ;;
+    "")
+      print_status
       echo ""
-      read -rp "Appliquer le fix maintenant ? (o/N) " ans
-      if [[ "$ans" =~ ^[oO]$ ]]; then
-        apply_fix
+      if needs_fix; then
+        echo "⚠ /etc/locale.conf contient des entrées non canoniques (.utf8 au lieu de .UTF-8)."
+        echo "  C'est la cause du bug distrobox-init / update-locale sur les boxes Ubuntu."
+        echo ""
+        read -rp "Appliquer le fix maintenant ? (o/N) " ans
+        if [[ "$ans" =~ ^[oO]$ ]]; then
+          apply_fix
+        else
+          echo "Annulé. Tu peux relancer avec : $0 --apply"
+        fi
       else
-        echo "Annulé. Tu peux relancer avec : $0 --apply"
+        echo "✓ Aucun fix nécessaire."
       fi
-    else
-      echo "✓ Aucun fix nécessaire."
-    fi
-    ;;
-  *)
-    echo "Usage : $0 [--status|--apply|--rollback]" >&2
-    exit 1
-    ;;
-esac
+      ;;
+    *)
+      echo "Option inconnue : $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+}
+
+# Exécuté seulement si le script est lancé, pas s'il est sourcé : les tests bats
+# sourcent ce fichier pour éprouver canonicalize() et needs_fix() sans toucher
+# à /etc.
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+  main "$@"
+fi

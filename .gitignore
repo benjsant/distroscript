@@ -14,6 +14,10 @@
 *.swp
 *.swo
 
-# Manifestes distrobox-assemble générés (valeurs propres à une machine)
-distrobox.ini
-*.ini
+# Manifestes distrobox-assemble générés (valeurs propres à une machine).
+# Volontairement restreint : un `*.ini` global masquerait aussi un exemple de
+# manifeste qu'on voudrait versionner.
+/distrobox.ini
+/assemble/*.ini
+# Un exemple de manifeste reste versionnable malgré la règle ci-dessus.
+!/assemble/exemple.ini

@@ -6,12 +6,27 @@
 #   ./revert_locale.sh            # mode interactif, propose les backups disponibles
 #   ./revert_locale.sh --latest   # restaure directement le dernier backup
 #   ./revert_locale.sh --list     # affiche les backups sans rien restaurer
+#   ./revert_locale.sh --help     # aide (ne modifie rien)
 
 set -euo pipefail
 
-LOCALE_FILE="/etc/locale.conf"
+LOCALE_FILE="${LOCALE_FILE:-/etc/locale.conf}"
 BACKUP_GLOB="/etc/locale.conf.bak.distroscript.*"
 BACKUP_SYMLINK="/etc/locale.conf.bak.distroscript"
+
+usage() {
+  cat <<'EOF'
+Usage : ./revert_locale.sh [option]
+
+Restaure /etc/locale.conf depuis un backup créé par fix_locale.sh.
+
+Options :
+  (aucune)      liste les backups et propose d'en restaurer un
+  --list        affiche les backups sans rien restaurer
+  --latest      restaure directement le backup le plus récent
+  -h, --help    affiche cette aide
+EOF
+}
 
 list_backups() {
   # Renvoie une liste triée du plus récent au plus ancien
@@ -69,9 +84,9 @@ restore_file() {
   # Petit méta-backup de l'actuel avant restore, au cas où
   local pre_restore
   pre_restore="${LOCALE_FILE}.before-revert.$(date +%Y%m%d-%H%M%S)"
-  sudo cp -a "$LOCALE_FILE" "$pre_restore"
+  sudo cp -aL "$LOCALE_FILE" "$pre_restore"
   echo "État courant sauvegardé dans : $pre_restore"
-  sudo cp -a "$source" "$LOCALE_FILE"
+  sudo cp -aL "$source" "$LOCALE_FILE"
   echo "✓ Restauré depuis $source"
   echo ""
   echo "=== Nouveau contenu de $LOCALE_FILE ==="
@@ -95,7 +110,10 @@ case "${1:-}" in
     echo ""
     restore_file "$target"
     ;;
-  ""|--help|-h|help)
+  -h|--help|help)
+    usage
+    ;;
+  "")
     show_current
     echo ""
     if ! show_backups; then
@@ -121,7 +139,8 @@ case "${1:-}" in
     restore_file "$target"
     ;;
   *)
-    echo "Usage : $0 [--list|--latest]" >&2
+    echo "Option inconnue : $1" >&2
+    usage >&2
     exit 1
     ;;
 esac

@@ -93,21 +93,23 @@ cp "$SCRIPT_DIR/packages.txt" "$HOME_DIR/"
 cp "$LIB_DIR/versions.sh" "$HOME_DIR/"
 cp "$LIB_DIR/shell_setup.sh" "$HOME_DIR/"
 
-SEL="$(selinux_volume_suffix)"
+# Pas de suffixe :z : distrobox passe --security-opt label=disable, donc le
+# conteneur n'est pas confiné par SELinux. ":z" ne servirait à rien et
+# déclencherait un réétiquetage récursif de GAMES_DIR.
 
 EXTRA_FLAGS=(
   --device /dev/dri
   --device /dev/snd
   --device /dev/input
-  --volume="${GAMES_DIR}:${GAMES_DIR}${SEL}"
-  --volume="${XDG_RUNTIME_DIR}:${XDG_RUNTIME_DIR}${SEL}"
+  --volume="${GAMES_DIR}:${GAMES_DIR}"
+  --volume="${XDG_RUNTIME_DIR}:${XDG_RUNTIME_DIR}"
 )
 
 if [ "$HAS_DBUS" -eq 1 ]; then
   EXTRA_FLAGS+=(--env=DBUS_SESSION_BUS_ADDRESS="unix:path=${DBUS_SOCKET}")
 fi
 if [ -S /run/dbus/system_bus_socket ]; then
-  EXTRA_FLAGS+=(--volume="/run/dbus/system_bus_socket:/run/dbus/system_bus_socket${SEL}")
+  EXTRA_FLAGS+=(--volume="/run/dbus/system_bus_socket:/run/dbus/system_bus_socket")
 fi
 
 [ -e /dev/uinput ] && EXTRA_FLAGS+=(--device /dev/uinput)

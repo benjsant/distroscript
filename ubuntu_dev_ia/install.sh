@@ -50,10 +50,11 @@ cp "$LIB_DIR/shell_setup.sh" "$HOME_DIR/"
 
 EXTRA_FLAGS=""
 detect_nvidia  # ajoute /dev/dri + --nvidia si toolkit présent
-SEL="$(selinux_volume_suffix)"
+# Pas de suffixe :z (voir selinux_volume_suffix dans lib/common.sh) :
+# réétiqueter le dossier ROCm de l'hôte pourrait gêner l'hôte lui-même.
 
 if [ "$MODE" = "rocm" ] && [ -n "$ROCM_PATH" ]; then
-  EXTRA_FLAGS="$EXTRA_FLAGS --volume=${ROCM_PATH}:${ROCM_PATH}${SEL}"
+  EXTRA_FLAGS="$EXTRA_FLAGS --volume=${ROCM_PATH}:${ROCM_PATH}"
 elif [ "$MODE" = "nvidia" ] && ! has_nvidia_container_toolkit; then
   echo "Mode nvidia demandé mais nvidia-container-toolkit absent — CUDA ne fonctionnera pas dans la box." >&2
 fi

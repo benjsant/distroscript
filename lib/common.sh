@@ -132,7 +132,27 @@ is_selinux_enforced() {
   return 1
 }
 
-# Suffixe SELinux pour les --volume — ":z" si SELinux actif, vide sinon
+# Détecte le module de sécurité (LSM) réellement actif sur l'hôte.
+# Nobara, par exemple, utilise AppArmor et n'a pas SELinux du tout — dire
+# seulement "SELinux : inactif" est exact mais trompeur.
+detect_lsm() {
+  local lsms=""
+  [ -r /sys/kernel/security/lsm ] && lsms="$(cat /sys/kernel/security/lsm)"
+  case ",$lsms," in
+    *,selinux,*) echo "selinux" ;;
+    *,apparmor,*) echo "apparmor" ;;
+    *) echo "${lsms:-inconnu}" ;;
+  esac
+}
+
+# Suffixe SELinux pour les --volume — ":z" si SELinux actif, vide sinon.
+#
+# ATTENTION : ne PAS utiliser pour les volumes des boxes distrobox.
+# distrobox-create passe --security-opt label=disable de façon inconditionnelle,
+# donc le conteneur n'est jamais confiné par SELinux et ":z" est inutile. Pire,
+# ":z" déclenche un réétiquetage RÉCURSIF du volume : appliqué à une
+# bibliothèque de jeux ou à /usr/lib64/rocm, c'est très long et ça modifie les
+# étiquettes côté hôte. Conservé pour un éventuel usage hors distrobox.
 selinux_volume_suffix() {
   if is_selinux_enforced; then
     echo ":z"
@@ -189,8 +209,6 @@ detect_render_gid() {
 # Détection GPU NVIDIA + activation du flag --nvidia uniquement si le toolkit est présent
 detect_nvidia() {
   EXTRA_FLAGS="${EXTRA_FLAGS:-}"
-  local sel
-  sel="$(selinux_volume_suffix)"
 
   # /dev/dri est presque toujours présent ; on l'expose pour le rendu vidéo / VAAPI
   if [ -d /dev/dri ]; then
@@ -209,9 +227,6 @@ detect_nvidia() {
     fi
   fi
 
-  # Sur SELinux, relabel des montages que distrobox ajoute par défaut serait idéal
-  # mais distrobox-create gère --home avec :Z en interne. On exporte sel pour les volumes manuels.
-  export SELINUX_VOL_SUFFIX="$sel"
 }
 
 # Cherche un dossier ROCm dans les emplacements connus (Fedora vs Ubuntu)
@@ -238,6 +253,7 @@ print_host_summary() {
   detect_container_engine
   echo "Hôte : ${PRETTY_NAME:-inconnu} (catégorie: $HOST_DISTRO)"
   echo "Moteur : ${CONTAINER_ENGINE:-aucun}"
+  echo "LSM : $(detect_lsm)"
   echo "SELinux : $(is_selinux_enforced && echo "actif" || echo "inactif")"
   echo "cgroups v2 délégué : $(has_cgroup_delegation && echo "oui" || echo "non")"
   echo "nvidia-container-toolkit : $(has_nvidia_container_toolkit && echo "présent" || echo "absent")"

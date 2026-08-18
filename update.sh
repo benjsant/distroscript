@@ -7,6 +7,9 @@ source "$SCRIPT_DIR/lib/common.sh"
 check_not_root
 force_utf8_locale
 
+# Positionné par do_update dès qu'une étape échoue ; lu par le bilan final.
+UPDATE_HAD_ERRORS=0
+
 # Auto-discovery : tous les dossiers contenant un install.sh, sauf le install.sh racine
 mapfile -t BOXES < <(
   find "$SCRIPT_DIR" -maxdepth 2 -name install.sh -not -path "$SCRIPT_DIR/install.sh" \
@@ -14,6 +17,21 @@ mapfile -t BOXES < <(
 )
 
 # ---------- Helpers de mise à jour ----------
+
+# Exécute une étape de mise à jour en tolérant son échec, mais SANS le masquer.
+# Auparavant les fonctions se terminaient par `2>/dev/null || true`, ce qui
+# avalait à la fois le message d'erreur et le code retour : do_update affichait
+# "OK" même quand tout avait échoué. On tolère toujours (une box à moitié à jour
+# vaut mieux qu'un script avorté), mais on le dit.
+step() {
+  local label="$1"
+  shift
+  if "$@"; then
+    return 0
+  fi
+  echo "  ⚠ échec : $label" >&2
+  return 1
+}
 
 # apt/dnf/pacman selon la base de la box
 update_packages() {
@@ -66,12 +84,19 @@ update_ollama() {
 
 update_go_tools() {
   distrobox enter "ubuntu_dev_go" -- bash -ic '
-    go install golang.org/x/tools/gopls@latest 2>/dev/null || true
-    go install github.com/go-delve/delve/cmd/dlv@latest 2>/dev/null || true
-    go install github.com/air-verse/air@latest 2>/dev/null || true
-    go install honnef.co/go/tools/cmd/staticcheck@latest 2>/dev/null || true
-    go install golang.org/x/tools/cmd/goimports@latest 2>/dev/null || true
-  ' 2>/dev/null || true
+    fail=0
+    for pkg in golang.org/x/tools/gopls \
+               github.com/go-delve/delve/cmd/dlv \
+               github.com/air-verse/air \
+               honnef.co/go/tools/cmd/staticcheck \
+               golang.org/x/tools/cmd/goimports; do
+      if ! go install "${pkg}@latest"; then
+        echo "    échec : $pkg" >&2
+        fail=1
+      fi
+    done
+    exit "$fail"
+  '
 }
 
 update_sdkman() {
@@ -134,28 +159,47 @@ do_update() {
   fi
   echo ""
   echo "--- $name ---"
-  update_packages "$name"
+  local status=0
+  step "mise à jour des paquets" update_packages "$name" || status=1
+  # Chaque étape est encapsulée dans `step` : son échec est signalé et retenu,
+  # sans interrompre les suivantes.
   case "$name" in
     ubuntu_dev_python)
-      update_pyenv_uv "$name"; update_nvm "$name"
+      step "pyenv/uv" update_pyenv_uv "$name" || status=1
+      step "nvm"      update_nvm "$name"      || status=1
       # Le profil data ajoute des outils installés via `uv tool`
       if [ "$(cat "$HOME/distrobox/$name/.profile_name" 2>/dev/null)" = "data" ]; then
-        update_uv_tools "$name"
+        step "outils uv (profil data)" update_uv_tools "$name" || status=1
       fi
       ;;
-    ubuntu_dev_ia)              update_pyenv_uv "$name"; update_ollama ;;
-    ubuntu_dev_rust)            update_rust ;;
-    ubuntu_dev_go)              update_go_tools ;;
+    ubuntu_dev_ia)
+      step "pyenv/uv" update_pyenv_uv "$name" || status=1
+      step "ollama"   update_ollama            || status=1
+      ;;
+    ubuntu_dev_rust)            step "rustup" update_rust || status=1 ;;
+    ubuntu_dev_go)              step "outils Go" update_go_tools || status=1 ;;
     ubuntu_dev_devops)          : ;;  # apt suffit
-    ubuntu_dev_dotnet)          update_dotnet_tools ;;
-    ubuntu_dev_writing)         update_nvm "$name";      update_npm_global "$name" ;;
-    ubuntu_dev_php)             update_composer;         update_nvm "$name" ;;
-    ubuntu_dev_java)            update_sdkman ;;
-    ubuntu_dev_security_audit)  update_uv_tools "$name" ;;
+    ubuntu_dev_dotnet)          step "outils dotnet" update_dotnet_tools || status=1 ;;
+    ubuntu_dev_writing)
+      step "nvm"        update_nvm "$name"        || status=1
+      step "npm global" update_npm_global "$name" || status=1
+      ;;
+    ubuntu_dev_php)
+      step "composer" update_composer   || status=1
+      step "nvm"      update_nvm "$name" || status=1
+      ;;
+    ubuntu_dev_java)            step "sdkman" update_sdkman || status=1 ;;
+    ubuntu_dev_security_audit)  step "outils uv" update_uv_tools "$name" || status=1 ;;
     fedora_gaming)              : ;;  # dnf suffit
-    arch_gaming)                update_aur ;;
+    arch_gaming)                step "paquets AUR" update_aur || status=1 ;;
   esac
-  echo "$name : OK"
+
+  if [ "$status" -eq 0 ]; then
+    echo "$name : OK"
+  else
+    echo "$name : terminé AVEC DES ERREURS (voir ci-dessus)" >&2
+    UPDATE_HAD_ERRORS=1
+  fi
 }
 
 # ---------- Menu ----------
@@ -177,7 +221,12 @@ case "$choix" in
       do_update "$box"
     done
     echo ""
-    echo "Tous les environnements sont à jour."
+    if [ "${UPDATE_HAD_ERRORS:-0}" -eq 0 ]; then
+      echo "Tous les environnements sont à jour."
+    else
+      echo "Terminé, mais au moins un environnement a rencontré des erreurs." >&2
+      exit 1
+    fi
     ;;
   *)
     if [[ "$choix" =~ ^[0-9]+$ ]] && (( choix >= 1 && choix <= ${#BOXES[@]} )); then

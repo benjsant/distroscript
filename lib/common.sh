@@ -94,19 +94,28 @@ check_or_recreate_box() {
 }
 
 # Détecte la distribution hôte : "fedora" (inclut Nobara/Bazzite), "debian" (inclut Mint/Ubuntu), ou "other"
+#
+# /etc/os-release est lu dans un SOUS-SHELL : le sourcer directement définirait
+# ID, NAME, VERSION, PRETTY_NAME… dans le shell appelant et écraserait
+# silencieusement les variables de même nom de n'importe quel script.
+# Les valeurs utiles sont réexportées explicitement, préfixées HOST_.
 detect_host_distro() {
   HOST_DISTRO="other"
   HOST_ID_LIKE=""
+  HOST_PRETTY_NAME=""
   if [ -r /etc/os-release ]; then
+    local raw
     # shellcheck disable=SC1091
-    . /etc/os-release
-    HOST_ID_LIKE="${ID_LIKE:-} ${ID:-}"
+    raw="$( . /etc/os-release 2>/dev/null; printf '%s\n%s\n%s' \
+              "${ID_LIKE:-} ${ID:-}" "${PRETTY_NAME:-}" "${ID:-}" )"
+    HOST_ID_LIKE="$(printf '%s' "$raw" | sed -n '1p')"
+    HOST_PRETTY_NAME="$(printf '%s' "$raw" | sed -n '2p')"
     case "$HOST_ID_LIKE" in
       *fedora*|*rhel*) HOST_DISTRO="fedora" ;;
       *debian*|*ubuntu*) HOST_DISTRO="debian" ;;
     esac
   fi
-  export HOST_DISTRO HOST_ID_LIKE
+  export HOST_DISTRO HOST_ID_LIKE HOST_PRETTY_NAME
 }
 
 # Détecte le moteur de conteneurs préféré
@@ -251,7 +260,7 @@ enable_logging() {
 print_host_summary() {
   detect_host_distro
   detect_container_engine
-  echo "Hôte : ${PRETTY_NAME:-inconnu} (catégorie: $HOST_DISTRO)"
+  echo "Hôte : ${HOST_PRETTY_NAME:-inconnu} (catégorie: $HOST_DISTRO)"
   echo "Moteur : ${CONTAINER_ENGINE:-aucun}"
   echo "LSM : $(detect_lsm)"
   echo "SELinux : $(is_selinux_enforced && echo "actif" || echo "inactif")"

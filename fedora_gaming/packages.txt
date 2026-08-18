@@ -1,23 +1,36 @@
 # fedora_gaming — tout le nécessaire pour JOUER, dans la box.
 # L'hôte reste propre : aucun paquet wine/steam/mesa n'y est installé.
 #
+# Disponibilité de chaque paquet vérifiée dans une fedora-toolbox:43 réelle,
+# avec RPM Fusion (free + nonfree) et Terra activés. Ne pas ajouter de paquet
+# sans l'avoir vérifié : les noms diffèrent entre Fedora, Nobara et Arch.
+#
 # Volontairement absent :
 #   - flatpak / flatseal : flatpak dans un conteneur ne fonctionne pas
-#   - bottles            : upstream ne supporte plus que le flatpak
+#   - gamescope-libs.i686, ppsspp, mgba : n'existent pas sur Fedora 43
 #   - dépendances pures (gtk3, qt*-qtbase, libX*, cairo…) : dnf les résout seul
 
 # --- Lanceurs -----------------------------------------------------------
 steam
 lutris
-heroic-games-launcher-bin
+heroic-games-launcher
 protonplus
 
+# --- Proton hors Steam --------------------------------------------------
+# umu-launcher est la pièce centrale du lancement de jeux Windows hors Steam :
+# Lutris et Heroic s'appuient dessus pour exécuter Proton (dont Proton-GE,
+# installable via ProtonPlus).
+umu-launcher
+
 # --- Wine et compatibilité Windows --------------------------------------
+# Fedora fournit wine stable. Pour wine-staging (plus de correctifs orientés
+# jeu), ajouter le dépôt WineHQ : https://gitlab.winehq.org/wine/wine/-/wikis/Download
 wine
 wine-core
 wine-mono
 winetricks
 protontricks
+bottles
 cabextract
 p7zip
 innoextract
@@ -35,8 +48,10 @@ vdpauinfo
 libdrm
 glx-utils
 
-# --- Pilotes graphiques 32 bits (indispensable : beaucoup de jeux Steam,
-#     et toute la couche Wine 32 bits, sont en i686) ----------------------
+# --- Pilotes graphiques 32 bits -----------------------------------------
+# Indispensable : beaucoup de jeux Steam et toute la couche Wine 32 bits sont
+# en i686. Confirmé par l'hôte de référence, où mangohud, gamemode et vkBasalt
+# sont installés dans les deux architectures.
 mesa-vulkan-drivers.i686
 mesa-dri-drivers.i686
 vulkan-loader.i686
@@ -48,6 +63,8 @@ gamemode
 gamemode.i686
 gamescope
 goverlay
+vkBasalt
+vkBasalt.i686
 
 # --- Audio (le socket PipeWire de l'hôte est monté par install.sh) -------
 pipewire
@@ -65,9 +82,7 @@ libevdev-utils
 
 # --- Émulateurs ---------------------------------------------------------
 dolphin-emu
-ppsspp
 snes9x-gtk
-mgba
 
 # --- Divers -------------------------------------------------------------
 gnome-keyring

@@ -15,29 +15,37 @@ fi
 FEDORA_REL="$(rpm -E %fedora)"
 
 # ---------------------------------------------------------------------------
-# 1. Dépôts : RPM Fusion (steam, wine, mesa freeworld) + COPR (heroic, protonplus)
+# 1. Dépôts
 # ---------------------------------------------------------------------------
+# RPM Fusion : steam, snes9x-gtk, codecs.
 echo "Activation de RPM Fusion..."
 sudo dnf install -y \
   "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA_REL}.noarch.rpm" \
   "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_REL}.noarch.rpm"
 
-# Les COPR sont des dépôts tiers : s'ils sont cassés sur une release récente de
-# Fedora, on continue sans plutôt que de faire échouer toute l'installation.
-echo "Activation des dépôts COPR..."
-sudo dnf -y copr enable atim/heroic-games-launcher || \
-  echo "  ⚠ COPR heroic indisponible pour Fedora ${FEDORA_REL} — Heroic sera ignoré." >&2
-sudo dnf -y copr enable wehagy/protonplus || \
-  echo "  ⚠ COPR protonplus indisponible pour Fedora ${FEDORA_REL} — ProtonPlus sera ignoré." >&2
+# Terra (Fyra Labs) : umu-launcher, heroic-games-launcher, protonplus.
+# Préféré aux COPR personnels — c'est un dépôt maintenu conçu pour s'ajouter à
+# une Fedora standard, là où les COPR gaming répandus (gloriouseggroll) sont des
+# overlays de distro complets, déconseillés hors Nobara.
+echo "Activation de Terra..."
+sudo tee /etc/yum.repos.d/terra.repo >/dev/null <<'EOF'
+[terra]
+name=Terra $releasever
+metalink=https://tetsudou.fyralabs.com/metalink?repo=terra$releasever&arch=$basearch
+gpgkey=https://repos.fyralabs.com/terra$releasever/key.asc
+gpgcheck=1
+enabled=1
+EOF
 
 sudo dnf upgrade -y
 
 # ---------------------------------------------------------------------------
 # 2. Paquets
 # ---------------------------------------------------------------------------
-# --skip-unavailable : un seul paquet absent (COPR down, renommage entre deux
-# releases Fedora) ne doit pas faire échouer les 60 autres. L'ancien script
-# faisait un `xargs dnf install` global qui abandonnait tout sur un raté.
+# --skip-unavailable : un seul paquet absent (dépôt tiers indisponible,
+# renommage entre deux releases Fedora) ne doit pas faire échouer les 60 autres.
+# L'ancien script faisait un `xargs dnf install` global qui abandonnait tout
+# sur un raté.
 echo "Installation des paquets..."
 mapfile -t PKGS < <(grep -v '^\s*#' "$PACKAGE_FILE" | grep -v '^\s*$')
 sudo dnf install -y --skip-unavailable "${PKGS[@]}" \
@@ -83,15 +91,34 @@ export GAMES_DIR WINEPREFIX="$GAMES_DIR/prefixes/default"
 # ---------------------------------------------------------------------------
 # C'est ce qui rend la box utilisable comme un vrai système de jeu : sans export,
 # il faut passer par `distrobox enter` avant chaque lancement.
+# Les noms de fichiers .desktop varient (nom court ou identifiant reverse-DNS)
+# selon le paquet et sa version. Plutôt que de maintenir une liste qui se
+# désynchronise, on cherche le .desktop réellement installé pour chaque appli.
+export_app() {
+  local label="$1" desktop
+  shift
+  for desktop in "$@"; do
+    if [ -f "/usr/share/applications/${desktop}.desktop" ] \
+       && distrobox-export --app "$desktop" &>/dev/null; then
+      echo "  [ok] $label"
+      return 0
+    fi
+  done
+  echo "  [--] $label (non installé)"
+}
+
 echo "Export des lanceurs vers l'hôte..."
-for app in steam lutris heroic net.davidotek.pupgui2 com.vysp3r.ProtonPlus goverlay antimicrox dolphin-emu ppsspp; do
-  if distrobox-export --app "$app" &>/dev/null; then
-    echo "  [ok] $app"
-  fi
-done
+export_app "Steam"      steam
+export_app "Lutris"     net.lutris.Lutris lutris
+export_app "Heroic"     com.heroicgameslauncher.hgl heroic
+export_app "ProtonPlus" com.vysp3r.ProtonPlus protonplus
+export_app "Bottles"    com.usebottles.bottles bottles
+export_app "GOverlay"   io.github.benjamimgois.goverlay goverlay
+export_app "AntiMicroX" io.github.antimicrox.antimicrox antimicrox
+export_app "Dolphin"    dolphin-emu
 
 # Binaires utiles en ligne de commande depuis l'hôte
-for bin in winetricks protontricks mangohud gamescope; do
+for bin in winetricks protontricks mangohud gamescope umu-run; do
   command -v "$bin" &>/dev/null && distrobox-export --bin "$(command -v "$bin")" \
     --export-path "$HOME/.local/bin" &>/dev/null || true
 done

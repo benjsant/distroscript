@@ -15,13 +15,16 @@ mapfile -t BOXES < <(
 
 # ---------- Helpers de mise à jour ----------
 
-# apt upgrade pour les boxes Ubuntu ; dnf upgrade pour fedora_gaming
+# apt/dnf/pacman selon la base de la box
 update_packages() {
   local name="$1"
   if [[ "$name" == ubuntu_* ]]; then
     distrobox enter "$name" -- bash -c 'sudo apt-get update && sudo apt-get upgrade -y'
   elif [[ "$name" == fedora_* ]]; then
     distrobox enter "$name" -- bash -c 'sudo dnf upgrade -y'
+  elif [[ "$name" == arch_* ]]; then
+    # Arch ne supporte pas les mises à jour partielles : -Syu est obligatoire.
+    distrobox enter "$name" -- bash -c 'sudo pacman -Syu --noconfirm'
   fi
 }
 
@@ -87,6 +90,14 @@ update_dotnet_tools() {
   '
 }
 
+# Les paquets AUR (Heroic, ProtonPlus) ne sont pas couverts par pacman -Syu.
+update_aur() {
+  distrobox enter "arch_gaming" -- bash -c '
+    command -v paru &>/dev/null || exit 0
+    paru -Sua --noconfirm --skipreview || echo "  Mise à jour AUR échouée (non bloquant)." >&2
+  '
+}
+
 update_composer() {
   distrobox enter "ubuntu_dev_php" -- bash -c '
     export PATH="$HOME/.local/bin:$HOME/.config/composer/vendor/bin:$PATH"
@@ -142,6 +153,7 @@ do_update() {
     ubuntu_dev_java)            update_sdkman ;;
     ubuntu_dev_security_audit)  update_uv_tools "$name" ;;
     fedora_gaming)              : ;;  # dnf suffit
+    arch_gaming)                update_aur ;;
   esac
   echo "$name : OK"
 }

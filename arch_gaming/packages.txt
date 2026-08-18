@@ -1,0 +1,41 @@
+# arch_gaming — complément à l'image ghcr.io/ublue-os/steambox.
+#
+# L'image fournit DÉJÀ (vérifié par inspection) : steam, lutris, wine 11.11,
+# mangohud + lib32-mangohud, vkbasalt + lib32-vkbasalt, protontricks, winetricks,
+# steamcmd, la pile audio PipeWire complète en 32 bits, lib32-vulkan-radeon,
+# les vulkan-mesa-layers 32 bits, le runtime ROCm, LatencyFleX et obs-vkcapture.
+#
+# Ce fichier ne liste donc QUE le manquant. Tous ces paquets ont été vérifiés
+# présents dans les dépôts Arch officiels (extra / multilib) — aucun AUR requis.
+
+# --- Proton hors Steam --------------------------------------------------
+# Pièce centrale du lancement de jeux Windows hors Steam : Lutris et Heroic
+# s'appuient dessus pour exécuter Proton (dont Proton-GE).
+umu-launcher
+
+# --- Wine staging -------------------------------------------------------
+# Remplace le wine stable de l'image : staging embarque les correctifs
+# orientés jeu. Le remplacement est géré dans post_install.sh (conflit pacman).
+wine-staging
+
+# --- Performance et overlay --------------------------------------------
+gamescope
+gamemode
+lib32-gamemode
+goverlay
+
+# --- Manettes -----------------------------------------------------------
+antimicrox
+
+# --- Émulateurs ---------------------------------------------------------
+dolphin-emu
+ppsspp
+retroarch
+
+# --- Divers -------------------------------------------------------------
+innoextract
+p7zip
+cabextract
+git
+wget
+htop

@@ -36,7 +36,8 @@ Chaque environnement est basé sur Ubuntu 24.04 et préinstallé avec les outils
 | 8 | `ubuntu_dev_devops` | Ubuntu 24.04 | kubectl, helm, terraform, ansible, awscli, gcloud, az, k9s, kustomize, kind |
 | 9 | `ubuntu_dev_writing` | Ubuntu 24.04 | LaTeX (FR/EN), Pandoc (+ Eisvogel), Marp, Vale |
 | 10 | `ubuntu_dev_security_audit` | Ubuntu 24.04 | Trivy, Syft, Grype, Semgrep, Cosign, Gitleaks, TruffleHog, Checkov |
-| 11 | `fedora_gaming` | Fedora 43 | Steam, Lutris, Heroic, Wine, Proton, MangoHud, gamescope, émulateurs |
+| 11 | `fedora_gaming` | Fedora 43 | Steam, Lutris, Heroic, Wine, umu, Proton, MangoHud, gamescope, émulateurs |
+| 12 | `arch_gaming` | steambox (Arch) | Idem, sur l'image gaming maintenue par Universal Blue |
 
 > Les environnements de développement incluent les utilitaires : `bat`, `ripgrep`, `fzf`, `jq`, `htop`, `tmux`, `tree`, `gh`, `zsh`
 
@@ -140,10 +141,13 @@ les scripts restent disponibles à la main :
 ├── ubuntu_dev_devops/
 ├── ubuntu_dev_writing/
 ├── ubuntu_dev_security_audit/
-└── fedora_gaming/        # Environnement de jeu (base Fedora)
-    ├── install.sh
-    ├── post_install.sh
-    └── packages.txt
+├── fedora_gaming/        # Environnement de jeu (base Fedora)
+│   ├── install.sh
+│   ├── post_install.sh
+│   └── packages.txt
+├── arch_gaming/          # Environnement de jeu (base steambox / Arch)
+└── assemble/             # Pilote distrobox-assemble (voir assemble/README.md)
+    └── generate.sh
 ```
 
 * * *
@@ -223,9 +227,51 @@ sur une nouvelle machine, un seul script rétablit l'environnement complet.
   détecte le cas et demande confirmation avant de continuer sans.
 - **Bibliothèque Steam existante** : ne la copiez pas, montez-la —
   `--games-dir /chemin/vers/le/disque`.
-- **Flatpak** : volontairement absent de la box (flatpak dans un conteneur ne
-  fonctionne pas). Si vous voulez Bottles, installez-le en flatpak sur l'hôte :
-  son upstream ne supporte plus d'autre format.
+- **Flatpak** : volontairement absent de la box — flatpak dans un conteneur ne
+  fonctionne pas.
+- **Paquets vérifiés** : la disponibilité de chaque entrée de `packages.txt` a
+  été contrôlée dans une `fedora-toolbox:43` réelle avec RPM Fusion et Terra.
+  N'ajoutez pas de paquet sans le vérifier — les noms diffèrent entre Fedora,
+  Nobara et Arch (`heroic-games-launcher` sur Fedora contre
+  `heroic-games-launcher-bin` sur l'AUR, par exemple).
+- **Dépôt Terra** : fournit `umu-launcher`, `heroic-games-launcher` et
+  `protonplus`. Préféré aux COPR gaming répandus (`gloriouseggroll/nobara-*`),
+  qui sont des overlays de distro complets déconseillés hors Nobara.
+- **wine-staging** : Fedora ne fournit que wine stable. Pour staging, ajoutez le
+  [dépôt WineHQ](https://gitlab.winehq.org/wine/wine/-/wikis/Download) — ou
+  utilisez `arch_gaming`, où staging est dans les dépôts officiels.
+
+* * *
+
+### **arch_gaming**
+
+Même objectif que `fedora_gaming`, autre pari : au lieu de construire la box
+paquet par paquet, on part de **`ghcr.io/ublue-os/steambox`**, l'image OCI
+gaming maintenue par [Universal Blue](https://github.com/ublue-os/toolboxes)
+(successeur de `bazzite-arch`, archivé en mars 2026).
+
+```bash
+./arch_gaming/install.sh
+./arch_gaming/install.sh --games-dir /mnt/ssd/jeux
+```
+
+- **Ce que l'image apporte déjà** : Steam, Lutris, Wine, MangoHud, vkBasalt
+  (tous en 64 **et** 32 bits), protontricks, steamcmd, la pile audio PipeWire
+  complète en 32 bits, les couches Vulkan mesa 32 bits, le runtime ROCm,
+  LatencyFleX et obs-vkcapture. C'est la partie la plus pénible à assembler
+  soi-même, et elle est déléguée à des mainteneurs dont c'est le métier.
+- **Ce que le post-install ajoute** : `umu-launcher`, `wine-staging`,
+  `gamescope`, `gamemode` (+ lib32), `goverlay`, `antimicrox`, les émulateurs —
+  tous présents dans les dépôts Arch officiels. Heroic et ProtonPlus viennent
+  de l'AUR via `paru`, et leur échec n'est pas bloquant.
+- **Taille** : l'image pèse **~11 Go**. C'est le prix à payer, en échange d'une
+  box prête sans compilation ni résolution de dépendances.
+- **`--unshare-netns`** : recommandé en amont, et indispensable si Steam tourne
+  aussi sur l'hôte — deux Steam dans le même namespace réseau se disputent les
+  mêmes ports.
+- **Arch et la stabilité** : le conteneur est jetable et l'image est construite
+  et testée en amont ; une régression Arch ne touche pas l'hôte, et l'image peut
+  être épinglée par digest ou rollbackée.
 
 * * *
 

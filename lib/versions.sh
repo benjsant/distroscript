@@ -7,6 +7,10 @@
 
 UBUNTU_IMAGE="quay.io/toolbx/ubuntu-toolbox:24.04"
 FEDORA_IMAGE="quay.io/fedora/fedora-toolbox:43"
+# Image gaming prête à l'emploi maintenue par Universal Blue (ex-bazzite-arch).
+# ~11 Go : contient déjà Steam, Lutris, Wine, MangoHud/vkBasalt (+ lib32),
+# protontricks, steamcmd, la pile audio PipeWire 32 bits et les couches Vulkan.
+STEAMBOX_IMAGE="ghcr.io/ublue-os/steambox"
 NVM_VERSION="v0.40.3"
 PYTHON_VERSION="3.13.3"
 GO_VERSION="1.23.5"

@@ -21,7 +21,7 @@ apt_install_from ~/packages_common.txt ~/packages.txt
 setup_local_bin
 
 # kubectl (stable du jour)
-if ! command -v kubectl &>/dev/null; then
+if ! box_has_bin kubectl; then
   echo "Installation de kubectl..."
   KVER="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -L -s https://dl.k8s.io/release/stable.txt)"
   curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://dl.k8s.io/release/${KVER}/bin/linux/amd64/kubectl" -o "$LOCAL_BIN/kubectl"
@@ -29,13 +29,13 @@ if ! command -v kubectl &>/dev/null; then
 fi
 
 # Helm
-if ! command -v helm &>/dev/null; then
+if ! box_has_bin helm; then
   echo "Installation de Helm..."
   curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 fi
 
 # Terraform (via HashiCorp apt repo)
-if ! command -v terraform &>/dev/null; then
+if ! box_has_bin terraform; then
   echo "Installation de Terraform..."
   curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
   echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
@@ -45,20 +45,20 @@ if ! command -v terraform &>/dev/null; then
 fi
 
 # k9s (tarball)
-if ! command -v k9s &>/dev/null; then
+if ! box_has_bin k9s; then
   echo "Installation de k9s..."
   K9S_VER="$(github_latest_tag derailed/k9s "$K9S_FALLBACK")"
   download_tar_extract "https://github.com/derailed/k9s/releases/download/${K9S_VER}/k9s_Linux_amd64.tar.gz" "$LOCAL_BIN" k9s
 fi
 
 # Kustomize (script officiel)
-if ! command -v kustomize &>/dev/null; then
+if ! box_has_bin kustomize; then
   echo "Installation de kustomize..."
   ( cd "$LOCAL_BIN" && curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash )
 fi
 
 # Kind
-if ! command -v kind &>/dev/null; then
+if ! box_has_bin kind; then
   echo "Installation de kind..."
   KIND_VER="$(github_latest_tag kubernetes-sigs/kind "$KIND_FALLBACK")"
   download_bin "https://kind.sigs.k8s.io/dl/${KIND_VER}/kind-linux-amd64" "$LOCAL_BIN/kind"
@@ -70,7 +70,7 @@ fi
 # restent installés par défaut.
 if [ "$PROFILE" = "cloud" ]; then
   # AWS CLI v2
-  if ! command -v aws &>/dev/null; then
+  if ! box_has_bin aws; then
     echo "Installation d'awscli v2..."
     tmp_zip="$(mktemp --suffix=.zip)"
     tmp_dir="$(mktemp -d)"
@@ -81,7 +81,7 @@ if [ "$PROFILE" = "cloud" ]; then
   fi
 
   # Google Cloud CLI
-  if ! command -v gcloud &>/dev/null; then
+  if ! box_has_bin gcloud; then
     echo "Installation de gcloud CLI..."
     curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg \
       | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
@@ -92,7 +92,7 @@ if [ "$PROFILE" = "cloud" ]; then
   fi
 
   # Azure CLI
-  if ! command -v az &>/dev/null; then
+  if ! box_has_bin az; then
     echo "Installation d'Azure CLI..."
     curl --retry 3 --retry-delay 2 --connect-timeout 10 -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
   fi

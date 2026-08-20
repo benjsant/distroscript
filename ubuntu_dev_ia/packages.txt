@@ -1,24 +1,22 @@
+# Delta propre à cet environnement.
+# Les paquets communs sont dans lib/packages_common.txt.
+#
+# Les -dev de compilation CPython (zlib1g-dev, libbz2-dev, tk-dev,
+# libxmlsec1-dev…) ont été retirés avec pyenv : uv installe des binaires
+# précompilés.
+
 gnupg
 lsb-release
 cmake
 make
 openssh-client
-libssl-dev
-zlib1g-dev
-libbz2-dev
-libreadline-dev
-libsqlite3-dev
-llvm
-libncursesw5-dev
-xz-utils
-tk-dev
-libxml2-dev
-libxmlsec1-dev
-libffi-dev
-liblzma-dev
-# Utilitaires dev
 lsof
 strace
+
+# Utiles pour compiler des wheels natives
+libssl-dev
+libffi-dev
+
 # IA / ML
 ffmpeg
 sqlite3

@@ -146,12 +146,12 @@ distrobox-create \
   --additional-flags "${EXTRA_FLAGS[*]}"
 
 echo "Lancement du post-install..."
-distrobox enter "$BOX_NAME" -- bash -c "bash ~/post_install.sh '$GAMES_DIR'"
+distrobox enter -T "$BOX_NAME" -- bash -c "bash ~/post_install.sh '$GAMES_DIR'"
 
 ### --- Vérification --------------------------------------------------------
 echo ""
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -ic '
+distrobox enter -T "$BOX_NAME" -- bash -ic '
   for c in steam lutris wine mangohud gamescope umu-run protontricks; do
     command -v "$c" &>/dev/null && echo "  [ok] $c" || echo "  [!!] $c manquant"
   done
@@ -159,7 +159,7 @@ distrobox enter "$BOX_NAME" -- bash -ic '
 
 echo ""
 echo "Accélération 3D :"
-distrobox enter "$BOX_NAME" -- bash -ic '
+distrobox enter -T "$BOX_NAME" -- bash -ic '
   if command -v vulkaninfo &>/dev/null; then
     vulkaninfo --summary 2>/dev/null | grep -E "deviceName|driverName" | sed "s/^\s*/  /" \
       || echo "  [!!] Vulkan ne trouve aucun GPU"

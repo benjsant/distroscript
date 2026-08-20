@@ -93,10 +93,10 @@ distrobox-create \
 
 echo "Lancement du post-install (mode $MODE)..."
 
-distrobox enter "$BOX_NAME" -- bash -c "bash ~/post_install.sh $MODE"
+distrobox enter -T "$BOX_NAME" -- bash -c "bash ~/post_install.sh $MODE"
 
 echo "Vérification..."
-distrobox enter "$BOX_NAME" -- bash -ic "bash ~/verify.sh" 2>/dev/null || true
+distrobox enter -T "$BOX_NAME" -- bash -ic "bash ~/verify.sh" 2>/dev/null || true
 
 echo ""
 echo "Distrobox '$BOX_NAME' prête. Log : $LOG_FILE"

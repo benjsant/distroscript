@@ -29,19 +29,19 @@ fi
 # .NET SDK (LTS 8.0 par défaut)
 # Le SDK vient des dépôts Ubuntu (noble-updates/main), pas du dépôt
 # Microsoft, qui reste nécessaire uniquement pour PowerShell.
-if ! command -v dotnet &>/dev/null; then
+if ! box_has_bin dotnet; then
   echo "Installation du .NET SDK 8.0 (LTS)..."
   sudo apt-get install -y "dotnet-sdk-${DOTNET_SDK_VERSION}"
 fi
 
 # PowerShell
-if ! command -v pwsh &>/dev/null; then
+if ! box_has_bin pwsh; then
   echo "Installation de PowerShell..."
   sudo apt-get install -y powershell
 fi
 
 # Azure CLI
-if ! command -v az &>/dev/null; then
+if ! box_has_bin az; then
   echo "Installation d'Azure CLI..."
   curl --retry 3 --retry-delay 2 --connect-timeout 10 -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 fi

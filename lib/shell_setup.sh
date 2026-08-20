@@ -5,6 +5,13 @@
 # À copier dans le HOME_DIR de la box par install.sh, puis dans
 # post_install.sh : source ~/shell_setup.sh
 
+# Aucune invite debconf ne doit pouvoir bloquer une installation non
+# interactive. Sans ça, un paquet réclamant une saisie (tzdata, une licence…)
+# attendrait une entrée qui ne viendra jamais, et le script resterait figé sans
+# message. Observé dans le log du premier run réel : debconf se rabattait sur
+# le frontend Teletype faute de tty.
+export DEBIAN_FRONTEND=noninteractive
+
 # Installe les paquets listés dans un ou plusieurs fichiers, en ignorant
 # commentaires et lignes vides. Remplace le `grep | grep | xargs` recopié dans
 # chaque post_install, et permet de cumuler le fichier commun et celui de
@@ -20,6 +27,24 @@ apt_install_from() {
     | grep -v '^[[:space:]]*$' \
     | sort -u \
     | xargs -r sudo apt-get install -y
+}
+
+# Un outil est-il installé DANS la box ?
+#
+# `command -v` n'est pas fiable ici : distrobox monte le HOME de l'hôte et
+# insère son ~/.local/bin et son ~/bin dans le PATH de la box. Un outil présent
+# chez l'hôte y est donc "trouvé", son installation est sautée, et la box se met
+# à dépendre d'un binaire de l'hôte. Elle cesse d'être autonome, ce qui ruine sa
+# portabilité : déplacée sur une autre machine, l'outil manque.
+#
+# Ce helper ne regarde que les emplacements propres à la box.
+box_has_bin() {
+  local name="$1" p
+  [ -n "${LOCAL_BIN:-}" ] && [ -x "$LOCAL_BIN/$name" ] && return 0
+  for p in /usr/local/bin /usr/bin /bin /usr/local/sbin /usr/sbin; do
+    [ -x "$p/$name" ] && return 0
+  done
+  return 1
 }
 
 # Crée ~/.local/bin, l'ajoute au PATH (.bashrc + session courante).

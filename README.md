@@ -26,8 +26,8 @@ Chaque environnement est préinstallé avec les outils nécessaires à un usage 
 
 | # | Nom | Base | Outils principaux |
 | --- | --- | --- | --- |
-| 1 | `ubuntu_dev_python` | Ubuntu 24.04 | pyenv, uv, Node (NVM), VS Code, gh (profil `data` optionnel) |
-| 2 | `ubuntu_dev_ia` | Ubuntu 24.04 | Ollama, pyenv, uv, PyTorch : GPU NVIDIA/ROCm/CPU |
+| 1 | `ubuntu_dev_python` | Ubuntu 24.04 | uv (Python + venvs), Node (NVM), VS Code, gh (profil `data` optionnel) |
+| 2 | `ubuntu_dev_ia` | Ubuntu 24.04 | Ollama, uv, PyTorch : GPU NVIDIA/ROCm/CPU |
 | 3 | `ubuntu_dev_rust` | Ubuntu 24.04 | rustup, cargo, clippy, rustfmt, mold |
 | 4 | `ubuntu_dev_go` | Ubuntu 24.04 | Go SDK, gopls, delve, air, staticcheck |
 | 5 | `ubuntu_dev_java` | Ubuntu 24.04 | SDKMAN!, Temurin JDK 25/21 LTS, Maven, Gradle, Spring Boot CLI |
@@ -220,8 +220,8 @@ les scripts restent disponibles à la main :
 
 ### **ubuntu_dev_python**
 
-- **Temps d'installation** : pyenv compile Python depuis les sources → long sur machines modestes
-- **uv** : Complément de pyenv, `uv venv` pour créer un environnement virtuel, `uv pip install` pour installer des paquets
+- **uv gère aussi Python** : `uv python install 3.14`, `uv python list`, `uv python pin` (équivalent de `pyenv local`). Il télécharge des binaires précompilés, là où pyenv compilait depuis les sources : quelques secondes au lieu de plusieurs minutes.
+- **Environnements virtuels** : `uv venv` pour créer, `uv pip install` pour installer.
 - **Profil `data`** : ajoute ~1 Go (JupyterLab + stack scientifique dans `~/data_env`). Le venv est séparé du Python global de pyenv : activez-le avec `data-env` avant de lancer `jupyter lab`.
 
 * * *

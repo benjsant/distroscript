@@ -12,7 +12,11 @@ FEDORA_IMAGE="quay.io/fedora/fedora-toolbox:44"
 # protontricks, steamcmd, la pile audio PipeWire 32 bits et les couches Vulkan.
 STEAMBOX_IMAGE="ghcr.io/ublue-os/steambox"
 NVM_VERSION="v0.40.7"
-PYTHON_VERSION="3.14.7"
+# Version MINEURE, pas un patch complet : uv résout vers le dernier patch qu'il
+# publie. Épingler "3.14.7" échouait, python-build-standalone n'allant pas
+# au-delà de 3.14.3 : les releases CPython et les builds uv ne sont pas
+# synchronisées.
+PYTHON_VERSION="3.14"
 GO_VERSION="1.26.6"
 
 # ubuntu_dev_ia : version mineure maximale de Python acceptée pour le venv

@@ -81,10 +81,10 @@ ubuntu_box_install() {
     --additional-flags "$EXTRA_FLAGS"
 
   echo "Lancement du post-install..."
-  distrobox enter "$box_name" -- bash -c "bash ~/post_install.sh $profile"
+  distrobox enter -T "$box_name" -- bash -c "bash ~/post_install.sh $profile"
 
   echo "Vérification..."
-  distrobox enter "$box_name" -- bash -ic "bash ~/verify.sh $profile" 2>/dev/null || true
+  distrobox enter -T "$box_name" -- bash -ic "bash ~/verify.sh $profile" 2>/dev/null || true
 
   echo ""
   echo "Distrobox '$box_name' prête. Log : $log_file"

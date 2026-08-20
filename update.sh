@@ -37,26 +37,29 @@ step() {
 update_packages() {
   local name="$1"
   if [[ "$name" == ubuntu_* ]]; then
-    distrobox enter "$name" -- bash -c 'sudo apt-get update && sudo apt-get upgrade -y'
+    distrobox enter -T "$name" -- bash -c 'sudo apt-get update && sudo apt-get upgrade -y'
   elif [[ "$name" == fedora_* ]]; then
-    distrobox enter "$name" -- bash -c 'sudo dnf upgrade -y'
+    distrobox enter -T "$name" -- bash -c 'sudo dnf upgrade -y'
   elif [[ "$name" == arch_* ]]; then
     # Arch ne supporte pas les mises à jour partielles : -Syu est obligatoire.
-    distrobox enter "$name" -- bash -c 'sudo pacman -Syu --noconfirm'
+    distrobox enter -T "$name" -- bash -c 'sudo pacman -Syu --noconfirm'
   fi
 }
 
-update_pyenv_uv() {
+# uv gère à la fois son propre binaire et les versions de Python installées.
+update_uv_python() {
   local name="$1"
-  distrobox enter "$name" -- bash -c '
-    [ -d "$HOME/.pyenv" ] && git -C "$HOME/.pyenv" pull --ff-only || true
-    [ -f "$HOME/.local/bin/uv" ] && "$HOME/.local/bin/uv" self update || true
+  distrobox enter -T "$name" -- bash -c '
+    export PATH="$HOME/.local/bin:$PATH"
+    command -v uv &>/dev/null || exit 0
+    uv self update || true
+    uv python upgrade || true
   '
 }
 
 update_nvm() {
   local name="$1"
-  distrobox enter "$name" -- bash -c '
+  distrobox enter -T "$name" -- bash -c '
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
     command -v nvm &>/dev/null && nvm install --lts --reinstall-packages-from=default 2>/dev/null || true
@@ -64,14 +67,14 @@ update_nvm() {
 }
 
 update_rust() {
-  distrobox enter "ubuntu_dev_rust" -- bash -c '
+  distrobox enter -T "ubuntu_dev_rust" -- bash -c '
     [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
     rustup update 2>/dev/null || true
   '
 }
 
 update_ollama() {
-  distrobox enter "ubuntu_dev_ia" -- bash -c '
+  distrobox enter -T "ubuntu_dev_ia" -- bash -c '
     if command -v ollama &>/dev/null; then
       curl -fsSL https://ollama.com/install.sh | sh 2>/dev/null || true
       ollama list 2>/dev/null | tail -n +2 | awk "{print \$1}" | while read -r model; do
@@ -83,7 +86,7 @@ update_ollama() {
 }
 
 update_go_tools() {
-  distrobox enter "ubuntu_dev_go" -- bash -ic '
+  distrobox enter -T "ubuntu_dev_go" -- bash -ic '
     fail=0
     for pkg in golang.org/x/tools/gopls \
                github.com/go-delve/delve/cmd/dlv \
@@ -100,7 +103,7 @@ update_go_tools() {
 }
 
 update_sdkman() {
-  distrobox enter "ubuntu_dev_java" -- bash -c '
+  distrobox enter -T "ubuntu_dev_java" -- bash -c '
     export SDKMAN_DIR="$HOME/.sdkman"
     [ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ] && . "$SDKMAN_DIR/bin/sdkman-init.sh"
     sdk selfupdate force </dev/null 2>/dev/null || true
@@ -108,7 +111,7 @@ update_sdkman() {
 }
 
 update_dotnet_tools() {
-  distrobox enter "ubuntu_dev_dotnet" -- bash -c '
+  distrobox enter -T "ubuntu_dev_dotnet" -- bash -c '
     export PATH="$HOME/.dotnet/tools:$PATH"
     dotnet tool update --global dotnet-ef 2>/dev/null || true
     dotnet tool update --global dotnet-outdated-tool 2>/dev/null || true
@@ -117,14 +120,14 @@ update_dotnet_tools() {
 
 # Les paquets AUR (Heroic, ProtonPlus) ne sont pas couverts par pacman -Syu.
 update_aur() {
-  distrobox enter "arch_gaming" -- bash -c '
+  distrobox enter -T "arch_gaming" -- bash -c '
     command -v paru &>/dev/null || exit 0
     paru -Sua --noconfirm --skipreview || echo "  Mise à jour AUR échouée (non bloquant)." >&2
   '
 }
 
 update_composer() {
-  distrobox enter "ubuntu_dev_php" -- bash -c '
+  distrobox enter -T "ubuntu_dev_php" -- bash -c '
     export PATH="$HOME/.local/bin:$HOME/.config/composer/vendor/bin:$PATH"
     sudo "$HOME/.local/bin/composer" self-update 2>/dev/null || composer self-update 2>/dev/null || true
     composer global update 2>/dev/null || true
@@ -133,7 +136,7 @@ update_composer() {
 
 update_uv_tools() {
   local name="$1"
-  distrobox enter "$name" -- bash -c '
+  distrobox enter -T "$name" -- bash -c '
     export PATH="$HOME/.local/bin:$PATH"
     command -v uv &>/dev/null && uv self update 2>/dev/null || true
     command -v uv &>/dev/null && uv tool upgrade --all 2>/dev/null || true
@@ -142,7 +145,7 @@ update_uv_tools() {
 
 update_npm_global() {
   local name="$1"
-  distrobox enter "$name" -- bash -c '
+  distrobox enter -T "$name" -- bash -c '
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
     command -v npm &>/dev/null && npm update -g 2>/dev/null || true
@@ -165,7 +168,7 @@ do_update() {
   # sans interrompre les suivantes.
   case "$name" in
     ubuntu_dev_python)
-      step "pyenv/uv" update_pyenv_uv "$name" || status=1
+      step "uv/python"  update_uv_python "$name" || status=1
       step "nvm"      update_nvm "$name"      || status=1
       # Le profil data ajoute des outils installés via `uv tool`
       if [ "$(cat "$HOME/distrobox/$name/.profile_name" 2>/dev/null)" = "data" ]; then
@@ -173,7 +176,7 @@ do_update() {
       fi
       ;;
     ubuntu_dev_ia)
-      step "pyenv/uv" update_pyenv_uv "$name" || status=1
+      step "uv/python"  update_uv_python "$name" || status=1
       step "ollama"   update_ollama            || status=1
       ;;
     ubuntu_dev_rust)            step "rustup" update_rust || status=1 ;;

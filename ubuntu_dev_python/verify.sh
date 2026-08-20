@@ -5,7 +5,8 @@
 
 PROFILE="${1:-base}"
 
-[ -d "$HOME/.pyenv" ]        && echo '  [ok] pyenv' || echo '  [!!] pyenv manquant'
+command -v python &>/dev/null && echo "  [ok] python $(python --version 2>&1 | awk '{print $2}')" \
+                              || echo '  [!!] python manquant (uv python install)'
 [ -d "$HOME/.nvm" ]          && echo '  [ok] NVM'   || echo '  [!!] NVM manquant'
 [ -f "$HOME/.local/bin/uv" ] && echo '  [ok] uv'    || echo '  [!!] uv manquant'
 command -v gh &>/dev/null    && echo '  [ok] gh'    || echo '  [!!] gh manquant'

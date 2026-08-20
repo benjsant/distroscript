@@ -17,7 +17,7 @@ apt_install_from ~/packages_common.txt ~/packages.txt
 setup_local_bin
 
 # Composer (installer officiel : vérifie le hash)
-if ! command -v composer &>/dev/null; then
+if ! box_has_bin composer; then
   echo "Installation de Composer..."
   EXPECTED_HASH="$(curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://composer.github.io/installer.sig)"
   tmp_php="$(mktemp --suffix=.php)"
@@ -35,7 +35,7 @@ fi
 export PATH="$LOCAL_BIN:$HOME/.config/composer/vendor/bin:$PATH"
 
 # Symfony CLI
-if ! command -v symfony &>/dev/null; then
+if ! box_has_bin symfony; then
   echo "Installation de Symfony CLI..."
   curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL https://get.symfony.com/cli/installer | bash
   if [ -d "$HOME/.symfony5/bin" ]; then
@@ -44,13 +44,20 @@ if ! command -v symfony &>/dev/null; then
 fi
 
 # Laravel installer
-if ! command -v laravel &>/dev/null; then
+if ! box_has_bin laravel; then
   echo "Installation du Laravel installer..."
   composer global require laravel/installer
 fi
 
 # NVM + Node (pour Vite/Mix)
-if [ ! -d "$HOME/.nvm" ]; then
+# NVM_DIR doit être exporté AVANT l'installeur : depuis la v0.40.4, NVM
+# s'installe par défaut dans $XDG_CONFIG_HOME/nvm (~/.config/nvm) et non plus
+# dans ~/.nvm. Sans ça, tout le reste du projet cherche au mauvais endroit.
+export NVM_DIR="$HOME/.nvm"
+# Le dossier doit exister AVANT l'installeur : celui-ci refuse de démarrer si
+# NVM_DIR est défini mais absent ("that directory does not exist").
+mkdir -p "$NVM_DIR"
+if [ ! -s "$NVM_DIR/nvm.sh" ]; then
   echo "Installation de NVM $NVM_VERSION..."
   curl --retry 3 --retry-delay 2 --connect-timeout 10 -fsSL "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
 fi

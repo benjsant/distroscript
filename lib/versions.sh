@@ -49,5 +49,5 @@ EISVOGEL_FALLBACK="v3.5.1"
 
 # PyTorch : indices selon le backend GPU
 TORCH_CUDA_INDEX="https://download.pytorch.org/whl/cu124"
-TORCH_ROCM_INDEX="https://download.pytorch.org/whl/rocm6.2"
+TORCH_ROCM_INDEX="https://download.pytorch.org/whl/rocm6.4"
 TORCH_CPU_INDEX="https://download.pytorch.org/whl/cpu"

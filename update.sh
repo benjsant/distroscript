@@ -105,6 +105,8 @@ update_go_tools() {
 update_sdkman() {
   distrobox enter -T "ubuntu_dev_java" -- bash -c '
     export SDKMAN_DIR="$HOME/.sdkman"
+    # sdkman-init.sh casse sous set -u (voir ubuntu_dev_java/post_install.sh)
+    set +u
     [ -s "$SDKMAN_DIR/bin/sdkman-init.sh" ] && . "$SDKMAN_DIR/bin/sdkman-init.sh"
     sdk selfupdate force </dev/null 2>/dev/null || true
   '

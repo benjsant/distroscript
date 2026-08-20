@@ -18,6 +18,8 @@ libssl-dev
 libffi-dev
 
 # IA / ML
+# zstd : exigé par l'installeur Ollama pour décompresser ses archives.
+zstd
 ffmpeg
 sqlite3
 numactl

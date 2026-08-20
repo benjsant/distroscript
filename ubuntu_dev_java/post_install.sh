@@ -31,9 +31,9 @@ export SDKMAN_DIR="$HOME/.sdkman"
 source "$SDKMAN_DIR/bin/sdkman-init.sh"
 
 # JDK Temurin LTS (21) + 17 pour compat
-JDK_LTS="21.0.5-tem"
-JDK_PREV_LTS="17.0.13-tem"
 
+# JDK_LTS et JDK_PREV_LTS viennent de versions.sh : ces pins avaient
+# échappé à la centralisation et étaient restés sur 21/17.
 install_sdk() {
   local candidate="$1" version="$2"
   if ! sdk list "$candidate" 2>/dev/null | grep -q "$version"; then

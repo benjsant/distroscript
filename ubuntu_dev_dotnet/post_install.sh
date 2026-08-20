@@ -27,9 +27,11 @@ if [ ! -f /etc/apt/sources.list.d/microsoft-prod.list ]; then
 fi
 
 # .NET SDK (LTS 8.0 par défaut)
+# Le SDK vient des dépôts Ubuntu (noble-updates/main), pas du dépôt
+# Microsoft, qui reste nécessaire uniquement pour PowerShell.
 if ! command -v dotnet &>/dev/null; then
   echo "Installation du .NET SDK 8.0 (LTS)..."
-  sudo apt-get install -y dotnet-sdk-8.0
+  sudo apt-get install -y "dotnet-sdk-${DOTNET_SDK_VERSION}"
 fi
 
 # PowerShell

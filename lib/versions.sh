@@ -21,6 +21,17 @@ GO_VERSION="1.26.6"
 # sources ou ne s'installe pas. À relever quand PyTorch suit.
 IA_PYTHON_MAX_MINOR="13"
 
+# ubuntu_dev_dotnet : SDK .NET. Ubuntu 24.04 fournit lui-même dotnet-sdk-10.0
+# dans noble-updates/main, le dépôt Microsoft n'est donc plus nécessaire pour
+# le SDK (il reste utilisé pour PowerShell).
+DOTNET_SDK_VERSION="10.0"
+
+# ubuntu_dev_java : identifiants SDKMAN des deux LTS installées. Vérifiés
+# contre la liste réelle de SDKMAN, dont les identifiants diffèrent du semver
+# publié par Adoptium.
+JDK_LTS="25.0.4-tem"
+JDK_PREV_LTS="21.0.12-tem"
+
 # Versions de repli des outils résolus via l'API GitHub.
 # Utilisées quand l'API est indisponible (limite de 60 requêtes/h et par IP) :
 # voir github_latest_tag() dans lib/fetch.sh. À rafraîchir de temps en temps.

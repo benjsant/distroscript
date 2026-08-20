@@ -30,9 +30,9 @@ Chaque environnement est préinstallé avec les outils nécessaires à un usage 
 | 2 | `ubuntu_dev_ia` | Ubuntu 24.04 | Ollama, pyenv, uv, PyTorch : GPU NVIDIA/ROCm/CPU |
 | 3 | `ubuntu_dev_rust` | Ubuntu 24.04 | rustup, cargo, clippy, rustfmt, mold |
 | 4 | `ubuntu_dev_go` | Ubuntu 24.04 | Go SDK, gopls, delve, air, staticcheck |
-| 5 | `ubuntu_dev_java` | Ubuntu 24.04 | SDKMAN!, Temurin JDK 21/17 LTS, Maven, Gradle, Spring Boot CLI |
+| 5 | `ubuntu_dev_java` | Ubuntu 24.04 | SDKMAN!, Temurin JDK 25/21 LTS, Maven, Gradle, Spring Boot CLI |
 | 6 | `ubuntu_dev_php` | Ubuntu 24.04 | PHP 8, Composer, Symfony CLI, Laravel, xdebug, Node (NVM) |
-| 7 | `ubuntu_dev_dotnet` | Ubuntu 24.04 | .NET SDK 8 LTS, PowerShell, Azure CLI |
+| 7 | `ubuntu_dev_dotnet` | Ubuntu 24.04 | .NET SDK 10 LTS, PowerShell, Azure CLI |
 | 8 | `ubuntu_dev_devops` | Ubuntu 24.04 | kubectl, helm, terraform, ansible, k9s, kustomize, kind (profil `cloud` optionnel) |
 | 9 | `ubuntu_dev_writing` | Ubuntu 24.04 | LaTeX (FR/EN), Pandoc (+ Eisvogel), Marp, Vale |
 | 10 | `ubuntu_dev_security_audit` | Ubuntu 24.04 | Trivy, Syft, Grype, Semgrep, Cosign, Gitleaks, TruffleHog, Checkov |
@@ -236,6 +236,7 @@ les scripts restent disponibles à la main :
 
 ### **ubuntu_dev_java**
 
+- **Versions** : les deux LTS installées sont épinglées dans `lib/versions.sh` (`JDK_LTS`, `JDK_PREV_LTS`), avec les identifiants SDKMAN, qui diffèrent du semver publié par Adoptium.
 - **SDKMAN!** : gère plusieurs JDK, `sdk list java` pour les versions disponibles, `sdk install java X.Y.Z-tem` pour ajouter un Temurin
 
 * * *

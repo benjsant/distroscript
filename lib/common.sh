@@ -127,6 +127,15 @@ check_or_recreate_box() {
   fi
 
   distrobox rm "$box_name" --force
+
+  # Garde-fou : un box_name vide ferait pointer home_dir sur ~/distrobox tout
+  # entier. Le cas n'est pas atteignable aujourd'hui (le nom vient d'un basename
+  # ou d'une liste validée), mais c'est le seul rm -rf du projet et il vise le
+  # HOME de l'utilisateur : autant qu'il refuse plutôt qu'il devine.
+  if [ -z "$box_name" ] || [ "$home_dir" = "$HOME/distrobox" ] || [ "$home_dir" = "$HOME" ]; then
+    echo "Refus de supprimer '$home_dir' : nom de box invalide." >&2
+    exit 1
+  fi
   rm -rf "$home_dir"
 }
 

@@ -78,6 +78,10 @@ remove_box() {
     echo "$name n'existe pas, nettoyage des résidus éventuels."
   fi
   # Dans les deux cas : home et log peuvent subsister d'une installation passée.
+  if [ -z "$name" ] || [ "$home_dir" = "$HOME/distrobox" ] || [ "$home_dir" = "$HOME" ]; then
+    echo "Refus de supprimer '$home_dir' : nom de box invalide." >&2
+    return 1
+  fi
   rm -rf "$home_dir"
   rm -f "$log_file"
 }
